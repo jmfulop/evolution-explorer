@@ -9,10 +9,10 @@
     html,body{width:100%;height:100%;overflow:hidden;background:#000408;font-family:system-ui,sans-serif}
     #c{position:absolute;top:0;left:0;display:block}
     #app{position:relative;width:100%;height:100vh;overflow:hidden;cursor:grab;user-select:none}
-    #topbar{position:absolute;top:0;left:0;right:0;height:64px;z-index:30;background:rgba(0,4,14,.92);border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;padding:0 22px;pointer-events:all}
+    #topbar{position:absolute;top:0;left:0;right:0;height:64px;z-index:110;background:rgba(0,4,14,.92);border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;padding:0 22px;pointer-events:all}
     #labels{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:5}
     #info{position:absolute;bottom:0;left:0;right:0;z-index:15;padding:18px 26px 24px;background:linear-gradient(to top,rgba(0,3,10,.97),rgba(0,3,10,.88));transform:translateY(100%);transition:transform .32s cubic-bezier(.4,0,.2,1)}
-    #about{position:absolute;top:64px;right:0;bottom:0;width:400px;z-index:20;background:rgba(0,3,12,.97);border-left:1px solid rgba(255,255,255,.08);transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);overflow-y:auto;pointer-events:all}
+    #about{position:absolute;top:64px;right:0;bottom:0;width:400px;z-index:110;background:rgba(0,3,12,.97);border-left:1px solid rgba(255,255,255,.08);transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);overflow-y:auto;pointer-events:all}
     #node-count{position:absolute;bottom:20px;left:24px;font-size:9px;color:rgba(255,255,255,.2);letter-spacing:.8px;pointer-events:none;z-index:5}
     .about-card{border-radius:10px;padding:14px 16px;margin-bottom:10px}
     .src-link{font-size:11px;text-decoration:none;line-height:1.5;opacity:.82;display:block;margin-bottom:8px}
@@ -25,7 +25,7 @@
 <div id="app">
   <canvas id="c"></canvas>
 
-  <div id="loader" style="position:absolute;inset:0;z-index:100;background:#000408;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .8s ease">
+  <div id="loader" style="position:absolute;inset:0;z-index:100;pointer-events:all;background:#000408;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .8s ease">
     <canvas id="loader-c" width="60" height="120" style="margin-bottom:28px"></canvas>
     <div style="font-size:11px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:10px">Initialising</div>
     <div style="font-size:22px;font-weight:700;color:#fff;letter-spacing:.5px;margin-bottom:6px">Human Evolution Explorer</div>
