@@ -61,7 +61,7 @@ const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
 renderer.setSize(W,H);
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 renderer.toneMapping=THREE.ReinhardToneMapping;
-renderer.toneMappingExposure=1.2;
+renderer.toneMappingExposure=1.0;
 
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x000408);
@@ -75,7 +75,7 @@ scene.add(pivot);
 
 // Bloom composer
 const renderPass=new THREE.RenderPass(scene,camera);
-const bloomPass=new THREE.UnrealBloomPass(new THREE.Vector2(W,H),1.4,0.5,0.1);
+const bloomPass=new THREE.UnrealBloomPass(new THREE.Vector2(W,H),0.7,0.4,0.28);
 const composer=new THREE.EffectComposer(renderer);
 composer.addPass(renderPass);
 composer.addPass(bloomPass);
