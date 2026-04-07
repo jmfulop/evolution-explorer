@@ -33,7 +33,8 @@
       <div style="position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,#1D9E75,#7F77DD,transparent);animation:slide 1.4s ease-in-out infinite"></div>
     </div>
   </div>
-  <style>@keyframes slide{0%{left:-100%}100%{left:100%}}</style>
+  <style>@keyframes slide{0%{left:-100%}100%{left:100%}}
+    @keyframes pulse-about{0%,100%{box-shadow:0 0 0 0 rgba(29,158,117,.5)}50%{box-shadow:0 0 0 8px rgba(29,158,117,0)}}</style>
 
   <div id="topbar">
     <div style="display:flex;align-items:center;gap:14px;flex-shrink:0">
@@ -41,7 +42,7 @@
         <div style="font-size:22px;font-weight:700;color:#fff;letter-spacing:.3px">Human Evolution Explorer</div>
         <div style="font-size:10px;color:rgba(255,255,255,.38);letter-spacing:2.5px;text-transform:uppercase;margin-top:3px">85 million years of history</div>
       </div>
-      <button id="about-btn" onclick="toggleAbout()" style="padding:5px 14px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.06);color:rgba(255,255,255,.65);cursor:pointer;transition:all .18s;flex-shrink:0">About</button>
+      <button id="about-btn" onclick="toggleAbout()" style="padding:6px 18px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;border:1.5px solid #1D9E75;background:rgba(29,158,117,.15);color:#1D9E75;cursor:pointer;transition:all .18s;flex-shrink:0;animation:pulse-about 2s ease-in-out infinite">About</button>
     </div>
     <div id="filters" style="display:flex;gap:8px;align-items:center"></div>
   </div>
@@ -321,10 +322,25 @@ window.hideLoader=function(){
 };
 setTimeout(window.hideLoader,2800);
 
+// Auto-open on first visit
+if(!localStorage.getItem('evo-visited')){
+  setTimeout(()=>{
+    aboutOpen=true;
+    document.getElementById('about').style.transform='translateX(0%)';
+    const btn=document.getElementById('about-btn');
+    btn.style.background='rgba(255,255,255,.14)';
+    btn.style.color='#fff';
+    btn.style.borderColor='rgba(255,255,255,.5)';
+    btn.style.animation='none';
+  },3200);
+  localStorage.setItem('evo-visited','1');
+}
+
 window.toggleAbout=function(){
   aboutOpen=!aboutOpen;
   document.getElementById('about').style.transform=aboutOpen?'translateX(0%)':'translateX(100%)';
   const btn=document.getElementById('about-btn');
+  btn.style.animation='none';
   btn.style.background=aboutOpen?'rgba(255,255,255,.14)':'rgba(255,255,255,.06)';
   btn.style.color=aboutOpen?'#fff':'rgba(255,255,255,.65)';
   btn.style.borderColor=aboutOpen?'rgba(255,255,255,.5)':'rgba(255,255,255,.28)';
