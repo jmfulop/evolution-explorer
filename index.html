@@ -5,164 +5,107 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Human Evolution Explorer</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { width: 100%; height: 100%; overflow: hidden; background: #000408; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{width:100%;height:100%;overflow:hidden;background:#000408;font-family:system-ui,sans-serif}
+    #c{position:absolute;top:0;left:0;width:100%;height:100%;display:block}
+    #app{position:relative;width:100%;height:100vh;overflow:hidden;cursor:grab;user-select:none}
+    #topbar{position:absolute;top:0;left:0;right:0;height:64px;z-index:10;background:rgba(0,4,14,.92);border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;padding:0 22px}
+    #labels{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:5}
+    #info{position:absolute;bottom:0;left:0;right:0;z-index:15;padding:18px 26px 24px;background:linear-gradient(to top,rgba(0,3,10,.97),rgba(0,3,10,.88));transform:translateY(100%);transition:transform .32s cubic-bezier(.4,0,.2,1)}
+    #about{position:absolute;top:64px;right:0;bottom:0;width:400px;z-index:20;background:rgba(0,3,12,.97);border-left:1px solid rgba(255,255,255,.08);transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);overflow-y:auto}
+    #node-count{position:absolute;bottom:20px;left:24px;font-size:9px;color:rgba(255,255,255,.2);letter-spacing:.8px;pointer-events:none;z-index:5}
+    .about-card{border-radius:10px;padding:14px 16px;margin-bottom:10px}
+    .src-link{font-size:11px;text-decoration:none;line-height:1.5;opacity:.82;display:block;margin-bottom:8px}
+    .sec-label{font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.28);margin-bottom:12px}
+    .divider{height:1px;background:rgba(255,255,255,.07);margin:20px 0}
   </style>
 </head>
 <body>
+<div id="app">
+  <canvas id="c"></canvas>
 
-<div id="loader" style="position:fixed;inset:0;z-index:100;background:#000408;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:system-ui">
-  <canvas id="dna-canvas" style="display:block"></canvas>
-  <div style="margin-top:32px;text-align:center">
-    <div style="font-size:11px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:10px">Initialising timeline</div>
-    <div style="font-size:28px;font-weight:700;color:#fff;letter-spacing:.5px;margin-bottom:4px">Human Evolution Explorer</div>
-    <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3)">85 million years of history</div>
-    <div style="margin-top:22px;width:220px;height:2px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;margin-left:auto;margin-right:auto">
-      <div id="loader-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#1D9E75,#7F77DD);border-radius:2px;transition:width .12s ease"></div>
-    </div>
-    <div id="loader-pct" style="font-size:10px;color:rgba(255,255,255,.22);margin-top:8px;letter-spacing:2px">0%</div>
-  </div>
-</div>
-
-<div id="app" style="position:relative;width:100%;height:100vh;background:#000;overflow:hidden;cursor:grab;user-select:none;font-family:system-ui,sans-serif">
-  <canvas id="c" style="display:block"></canvas>
-
-  <div   style="position:absolute;top:0;left:0;right:0;height:64px;z-index:10;background:rgba(0,4,14,.9);border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;padding:0 20px;pointer-events:none">
+  <!-- TOP BAR -->
+  <div id="topbar">
     <div style="display:flex;align-items:center;gap:14px;flex-shrink:0">
-      <div style="pointer-events:none">
+      <div>
         <div style="font-size:22px;font-weight:700;color:#fff;letter-spacing:.3px">Human Evolution Explorer</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.4);letter-spacing:2.5px;text-transform:uppercase;margin-top:3px">85 million years of history</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.38);letter-spacing:2.5px;text-transform:uppercase;margin-top:3px">85 million years of history</div>
       </div>
-      <button onclick="toggleAbout()" id="about-btn" style="padding:5px 14px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.8px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.06);color:rgba(255,255,255,.65);cursor:pointer;font-family:system-ui;pointer-events:all;transition:all .18s;text-transform:uppercase;flex-shrink:0">About</button>
+      <button id="about-btn" onclick="toggleAbout()" style="padding:5px 14px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.06);color:rgba(255,255,255,.65);cursor:pointer;transition:all .18s;flex-shrink:0">About</button>
     </div>
-    <div id="filters" style="display:flex;gap:8px;align-items:center;pointer-events:all"></div>
+    <div id="filters" style="display:flex;gap:8px;align-items:center"></div>
   </div>
 
-  <div id="labels" style="position:absolute;inset:0;pointer-events:none;overflow:hidden"></div>
+  <!-- FLOATING LABELS -->
+  <div id="labels"></div>
 
-  <div id="info" style="position:absolute;bottom:0;left:0;right:0;padding:18px 24px 22px;background:linear-gradient(to top,rgba(0,3,10,.97) 0%,rgba(0,3,10,.88) 100%);transform:translateY(100%);transition:transform .32s cubic-bezier(.4,0,.2,1)">
-    <div style="max-width:680px">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+  <!-- NODE INFO PANEL -->
+  <div id="info">
+    <div style="max-width:700px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div style="display:flex;align-items:center;gap:10px">
           <span id="info-badge" style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:20px">BIO</span>
           <span id="info-date" style="font-size:12px;color:rgba(255,255,255,.42)"></span>
         </div>
-        <button onclick="closeInfo()" style="background:none;border:none;color:rgba(255,255,255,.38);cursor:pointer;font-size:22px;line-height:1;padding:0">×</button>
+        <button onclick="closeInfo()" style="background:none;border:none;color:rgba(255,255,255,.38);cursor:pointer;font-size:24px;line-height:1;padding:0">×</button>
       </div>
       <div id="info-name" style="font-size:24px;font-weight:700;color:#fff;margin-bottom:8px;line-height:1.2"></div>
-      <div id="info-desc" style="font-size:15px;color:rgba(255,255,255,.65);line-height:1.75;max-width:580px"></div>
-      <div style="display:flex;align-items:center;gap:8px;margin-top:14px">
-        <button onclick="navNode(-1)" style="padding:5px 15px;border-radius:20px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.04);color:rgba(255,255,255,.6);cursor:pointer;font-size:11px">← Prev</button>
-        <button onclick="navNode(1)" style="padding:5px 15px;border-radius:20px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.04);color:rgba(255,255,255,.6);cursor:pointer;font-size:11px">Next →</button>
-        <span id="info-counter" style="font-size:10px;color:rgba(255,255,255,.22);margin-left:4px"></span>
+      <div id="info-desc" style="font-size:15px;color:rgba(255,255,255,.62);line-height:1.75;max-width:580px"></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:16px">
+        <button onclick="navNode(-1)" style="padding:6px 18px;border-radius:20px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.04);color:rgba(255,255,255,.6);cursor:pointer;font-size:12px">← Prev</button>
+        <button onclick="navNode(1)" style="padding:6px 18px;border-radius:20px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.04);color:rgba(255,255,255,.6);cursor:pointer;font-size:12px">Next →</button>
+        <span id="info-counter" style="font-size:11px;color:rgba(255,255,255,.22);margin-left:4px"></span>
       </div>
     </div>
   </div>
 
-  <div id="node-count" style="position:absolute;bottom:20px;left:24px;font-size:9px;color:rgba(255,255,255,.2);letter-spacing:.8px;pointer-events:none"></div>
-
-  <div id="about" style="position:absolute;top:64px;right:0;bottom:0;width:400px;background:rgba(0,3,12,.97);border-left:1px solid rgba(255,255,255,.08);transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);overflow-y:auto;z-index:20">
-    <div style="padding:28px 24px 48px;font-family:system-ui">
+  <!-- ABOUT PANEL -->
+  <div id="about">
+    <div style="padding:28px 24px 48px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
         <div>
-          <div style="font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:6px">About this project</div>
+          <div class="sec-label" style="margin-bottom:6px">About this project</div>
           <div style="font-size:20px;font-weight:700;color:#fff;line-height:1.25">Human Evolution<br>Explorer</div>
         </div>
-        <button onclick="toggleAbout()" style="background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:24px;padding:0;line-height:1;margin-top:2px">×</button>
+        <button onclick="toggleAbout()" style="background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:26px;padding:0;line-height:1">×</button>
       </div>
-      <p style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.78;margin-bottom:24px">An immersive 3D interactive timeline presenting <strong style="color:rgba(255,255,255,.9)">85 million years of human evolutionary history</strong> as a rotating DNA double helix. 19 pivotal events spiral through space — from the first primates to the projected future of AI-directed evolution. Drag to orbit. Click any node to explore the science.</p>
-      <div style="height:1px;background:rgba(255,255,255,.07);margin-bottom:20px"></div>
-      <div style="font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:14px">Three landmark 2025 discoveries</div>
-      <div style="background:rgba(29,158,117,.1);border:1px solid rgba(29,158,117,.28);border-radius:10px;padding:14px 16px;margin-bottom:10px">
+      <p style="font-size:13px;color:rgba(255,255,255,.58);line-height:1.78;margin-bottom:22px">An immersive 3D interactive timeline presenting <strong style="color:rgba(255,255,255,.9)">85 million years of human evolutionary history</strong> as a rotating DNA double helix. 19 pivotal events spiral through space — from the first primates to the projected future of AI-directed evolution. Drag to orbit. Click any node to explore the science.</p>
+      <div class="divider"></div>
+      <div class="sec-label">Three landmark 2025 discoveries</div>
+      <div class="about-card" style="background:rgba(29,158,117,.1);border:1px solid rgba(29,158,117,.28)">
         <div style="font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:.3px;margin-bottom:5px">Two ancestral populations</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.58);line-height:1.68">Cambridge University (<em>Nature Genetics</em>, 2025) found modern humans are a merger of two populations separated for 1.5 million years. Around 20% of our DNA comes from a mysterious "Population B" — concentrated in brain-function genes.</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.55);line-height:1.7">Cambridge University (<em>Nature Genetics</em>, 2025) found modern humans are a merger of two populations separated for 1.5 million years. Around 20% of our DNA comes from a mysterious "Population B" — concentrated in brain-function genes.</div>
       </div>
-      <div style="background:rgba(127,119,221,.1);border:1px solid rgba(127,119,221,.28);border-radius:10px;padding:14px 16px;margin-bottom:10px">
+      <div class="about-card" style="background:rgba(127,119,221,.1);border:1px solid rgba(127,119,221,.28)">
         <div style="font-size:11px;font-weight:700;color:#7F77DD;letter-spacing:.3px;margin-bottom:5px">Lineages far older than thought</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.58);line-height:1.68">A 1-million-year-old skull (Yunxian 2) reconstructed in <em>Science</em> (2025) showed all five major human lineages diverged over a million years ago — double previous estimates. The linear ladder model is dead.</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.55);line-height:1.7">A 1-million-year-old skull (Yunxian 2) in <em>Science</em> (2025) showed all five major human lineages diverged over a million years ago — double previous estimates. The linear ladder model is dead.</div>
       </div>
-      <div style="background:rgba(216,90,48,.1);border:1px solid rgba(216,90,48,.28);border-radius:10px;padding:14px 16px;margin-bottom:24px">
+      <div class="about-card" style="background:rgba(216,90,48,.1);border:1px solid rgba(216,90,48,.28)">
         <div style="font-size:11px;font-weight:700;color:#D85A30;letter-spacing:.3px;margin-bottom:5px">Southern Africa's hidden branch</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.58);line-height:1.68">Uppsala University (<em>Nature</em>, 2025) analysed 28 ancient genomes and found a southern African population in genetic isolation for 200,000 years. Over 40% of their unique variants are linked to brain development.</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.55);line-height:1.7">Uppsala University (<em>Nature</em>, 2025) analysed 28 ancient genomes and found a southern African population in isolation for 200,000 years. Over 40% of their unique variants are linked to brain development.</div>
       </div>
-      <div style="height:1px;background:rgba(255,255,255,.07);margin-bottom:20px"></div>
-      <div style="font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:10px">The cognitive revolution</div>
-      <p style="font-size:12px;color:rgba(255,255,255,.52);line-height:1.78;margin-bottom:20px">Modern brain architecture existed by ~300,000 years ago — but persistent complex culture only appeared ~40,000–75,000 years ago. Behavioural modernity was not a single mutation. It was an emergent property requiring neural capacity <em>and</em> sufficient population density to sustain cumulative culture across generations.</p>
-      <div style="height:1px;background:rgba(255,255,255,.07);margin-bottom:20px"></div>
-      <div style="font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:10px">The future</div>
-      <p style="font-size:12px;color:rgba(255,255,255,.52);line-height:1.78;margin-bottom:24px">CRISPR gene editing (2012), brain-computer interfaces, and large language models represent a convergence. For the first time in 4 billion years of life on Earth, a species consciously directs its own evolution — shifting from <strong style="color:rgba(255,255,255,.8)">natural selection to conscious selection</strong>. Whether this leads to liberation or catastrophic inequality is the defining question of our century.</p>
-      <div style="height:1px;background:rgba(255,255,255,.07);margin-bottom:20px"></div>
-      <div style="font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:12px">Primary sources</div>
-      <div style="display:flex;flex-direction:column;gap:9px">
-        <a href="https://doi.org/10.1038/s41588-025-02117-1" target="_blank" style="font-size:11px;color:#7F77DD;text-decoration:none;line-height:1.5;opacity:.85">Cousins, Scally & Durbin (2025) — Nature Genetics ↗</a>
-        <a href="https://doi.org/10.1038/s41586-025-09811-4" target="_blank" style="font-size:11px;color:#1D9E75;text-decoration:none;line-height:1.5;opacity:.85">Jakobsson et al. (2025) — Nature ↗</a>
-        <a href="https://www.science.org" target="_blank" style="font-size:11px;color:#1D9E75;text-decoration:none;line-height:1.5;opacity:.85">Ni et al. (2025) — Science ↗</a>
-        <a href="https://humanorigins.si.edu" target="_blank" style="font-size:11px;color:rgba(255,255,255,.35);text-decoration:none;line-height:1.5">Smithsonian Human Origins Program ↗</a>
-      </div>
+      <div class="divider"></div>
+      <div class="sec-label">The cognitive revolution</div>
+      <p style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.78;margin-bottom:20px">Modern brain architecture existed by ~300,000 years ago — but persistent complex culture only appeared ~40,000–75,000 years ago. Behavioural modernity was not a single mutation. It was an emergent property requiring neural capacity <em>and</em> sufficient population density to sustain cumulative culture across generations.</p>
+      <div class="divider"></div>
+      <div class="sec-label">The future</div>
+      <p style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.78;margin-bottom:22px">CRISPR gene editing, brain-computer interfaces, and large language models represent a convergence. For the first time in 4 billion years, a species consciously directs its own evolution — shifting from <strong style="color:rgba(255,255,255,.8)">natural selection to conscious selection</strong>. Whether this leads to liberation or catastrophic inequality is the defining question of our century.</p>
+      <div class="divider"></div>
+      <div class="sec-label">Primary sources</div>
+      <a class="src-link" href="https://doi.org/10.1038/s41588-025-02117-1" target="_blank" style="color:#7F77DD">Cousins, Scally & Durbin (2025) — Nature Genetics ↗</a>
+      <a class="src-link" href="https://doi.org/10.1038/s41586-025-09811-4" target="_blank" style="color:#1D9E75">Jakobsson et al. (2025) — Nature ↗</a>
+      <a class="src-link" href="https://www.science.org" target="_blank" style="color:#1D9E75">Ni et al. (2025) — Science ↗</a>
+      <a class="src-link" href="https://humanorigins.si.edu" target="_blank" style="color:rgba(255,255,255,.35)">Smithsonian Human Origins Program ↗</a>
     </div>
   </div>
+
+  <div id="node-count"></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-// ── Loading screen DNA animation ──────────────────────────────
-const dc=document.getElementById('dna-canvas');
-const dctx=dc.getContext('2d');
-dc.width=260;dc.height=180;
-let dnaT=0;
-function drawDNA(t){
-  dctx.clearRect(0,0,260,180);
-  const cx=130,amp=52,freq=0.045,speed=0.06;
-  for(let s=0;s<2;s++){
-    const off=s===0?0:Math.PI;
-    dctx.beginPath();
-    for(let x=0;x<=260;x+=2){
-      const y=cx+amp*Math.sin(freq*x+t+off);
-      x===0?dctx.moveTo(x,y):dctx.lineTo(x,y);
-    }
-    dctx.strokeStyle=s===0?'rgba(29,158,117,.85)':'rgba(127,119,221,.7)';
-    dctx.lineWidth=2.2;dctx.stroke();
-  }
-  for(let i=0;i<=16;i++){
-    const x=i*(260/16);
-    const y1=cx+amp*Math.sin(freq*x+t);
-    const y2=cx+amp*Math.sin(freq*x+t+Math.PI);
-    const alpha=0.18+0.22*Math.abs(Math.sin(freq*x+t));
-    dctx.beginPath();dctx.moveTo(x,y1);dctx.lineTo(x,y2);
-    dctx.strokeStyle=`rgba(100,140,200,${alpha})`;dctx.lineWidth=1;dctx.stroke();
-    const mid=(y1+y2)/2,r=2.8;
-    dctx.beginPath();dctx.arc(x,y1,r,0,Math.PI*2);
-    dctx.fillStyle='rgba(29,158,117,.9)';dctx.fill();
-    dctx.beginPath();dctx.arc(x,y2,r,0,Math.PI*2);
-    dctx.fillStyle='rgba(127,119,221,.85)';dctx.fill();
-    dctx.beginPath();dctx.arc(x,mid,1.4,0,Math.PI*2);
-    dctx.fillStyle='rgba(255,255,255,.2)';dctx.fill();
-  }
-  dnaT+=speed;
-}
-let loaderPct=0,loaderDone=false;
-const loaderBar=document.getElementById('loader-bar');
-const loaderPctEl=document.getElementById('loader-pct');
-function loaderTick(){
-  if(loaderDone)return;
-  drawDNA(dnaT);
-  loaderPct=Math.min(loaderPct+0.8,100);
-  loaderBar.style.width=loaderPct+'%';
-  loaderPctEl.textContent=Math.round(loaderPct)+'%';
-  requestAnimationFrame(loaderTick);
-}
-loaderTick();
-function dismissLoader(){
-  loaderDone=true;
-  const el=document.getElementById('loader');
-  el.style.transition='opacity .9s ease';
-  el.style.opacity='0';
-  setTimeout(()=>{el.style.display='none';},900);
-}
-// ── End loading screen ─────────────────────────────────────────
-
-
-let W=app.clientWidth,H=app.clientHeight;
+const app=document.getElementById('app'),cv=document.getElementById('c');
+let W=window.innerWidth,H=window.innerHeight;
 
 const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
 renderer.setSize(W,H);
@@ -182,13 +125,11 @@ const currentLook=new THREE.Vector3(0,0,0);
 
 const pivot=new THREE.Group();
 scene.add(pivot);
-
 scene.add(new THREE.AmbientLight(0x334466,1.2));
 const pl=new THREE.PointLight(0x99bbff,2.5,600);
-pl.position.set(0,0,120);
-scene.add(pl);
+pl.position.set(0,0,120);scene.add(pl);
 
-// Stars — two layers for depth
+// Stars
 (()=>{
   [5000,2000].forEach((n,li)=>{
     const pos=new Float32Array(n*3);
@@ -201,11 +142,7 @@ scene.add(pl);
     }
     const g=new THREE.BufferGeometry();
     g.setAttribute('position',new THREE.BufferAttribute(pos,3));
-    scene.add(new THREE.Points(g,new THREE.PointsMaterial({
-      color: li===0?0xaaccff:0x6699ff,
-      size: li===0?1.2:0.7,
-      sizeAttenuation:true,transparent:true,opacity:li===0?.6:.4
-    })));
+    scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:li===0?0xaaccff:0x6699ff,size:li===0?1.2:.7,sizeAttenuation:true,transparent:true,opacity:li===0?.6:.4})));
   });
 })();
 
@@ -223,7 +160,7 @@ const EVT=[
   {cat:'bio',label:'Genus Homo',date:'~2.8 million years ago',sz:4.5,desc:'First members of our genus appear. Larger brains, reduced jaw size, and greater dietary flexibility mark this critical transition.'},
   {cat:'cog',label:'First Stone Tools',date:'~2.6 million years ago',sz:4,desc:'Oldowan flaked stones — the earliest deliberate tool use. Requires planning, motor control, and cross-generational knowledge transmission.'},
   {cat:'bio',label:'Five Lineages Diverge',date:'~1 million years ago',sz:5.5,desc:'A landmark 2025 Science study (Yunxian 2 skull) showed all five major human lineages diverged more than a million years ago — double previous estimates.'},
-  {cat:'bio',label:'Homo sapiens Emerges',date:'~300,000 years ago',sz:6.5,desc:"Modern humans evolve in Africa. A 2025 Cambridge study found we are a merger of two populations separated for 1.5 million years — 20% of our DNA from a mysterious 'Population B' concentrated in brain-function genes."},
+  {cat:'bio',label:'Homo sapiens Emerges',date:'~300,000 years ago',sz:6.5,desc:"Modern humans evolve in Africa. A 2025 Cambridge study found we are a merger of two populations separated for 1.5 million years — 20% of our DNA from 'Population B' concentrated in brain-function genes."},
   {cat:'cog',label:'Symbolic Art',date:'~100,000 years ago',sz:4.5,desc:'Ochre engravings at Blombos Cave, South Africa. PNAS research found these evolved over 30,000 years to become more salient and memorable — adaptive tools for the mind.'},
   {cat:'cog',label:'Language Revolution',date:'~75,000 years ago',sz:5,desc:'Language transforms from survival replication into a complex recursive symbolic system, enabling abstract thought about non-present times and places.'},
   {cat:'bio',label:'Out of Africa',date:'~50,000 years ago',sz:4.5,desc:'Small bands disperse globally. Along the way they interbreed with Neanderthals (~2% of non-African DNA) and Denisovans — contributing lasting immune and cognitive adaptations.'},
@@ -238,7 +175,7 @@ const EVT=[
   {cat:'ai',label:'Conscious Evolution',date:'2035–2060 (projected)',sz:5,desc:'CRISPR germline editing, brain-computer interfaces, and life extension research converge. For the first time in history, a species consciously chooses the direction of its own evolution.'},
 ];
 
-// Helix — wider radius to fill screen
+// Helix
 const HR=42,HH=170,HT=2.2,NS=300;
 function hpt(i,tot,off){
   const t=(i/tot)*Math.PI*2*HT,y=(i/tot-.5)*HH;
@@ -246,10 +183,7 @@ function hpt(i,tot,off){
 }
 const s1=[],s2=[];
 for(let i=0;i<=NS;i++){s1.push(hpt(i,NS,0));s2.push(hpt(i,NS,Math.PI));}
-const mkLine=(pts,col,op)=>{
-  const g=new THREE.BufferGeometry().setFromPoints(pts);
-  return new THREE.Line(g,new THREE.LineBasicMaterial({color:col,opacity:op,transparent:true}));
-};
+const mkLine=(pts,col,op)=>{const g=new THREE.BufferGeometry().setFromPoints(pts);return new THREE.Line(g,new THREE.LineBasicMaterial({color:col,opacity:op,transparent:true}));};
 pivot.add(mkLine(s1,0x1D9E75,0.85));
 pivot.add(mkLine(s2,0x7F77DD,0.7));
 const rm=new THREE.LineBasicMaterial({color:0x334455,opacity:0.55,transparent:true});
@@ -258,7 +192,7 @@ for(let i=0;i<=44;i++){
   pivot.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([p1,p2]),rm));
 }
 
-// Glow sprite texture
+// Glow texture
 const glowCache={};
 function mkGlow(hex){
   if(glowCache[hex])return glowCache[hex];
@@ -266,13 +200,9 @@ function mkGlow(hex){
   c.width=c.height=sz;const ctx=c.getContext('2d'),r=sz/2;
   const col=new THREE.Color(hex),h='#'+col.getHexString();
   const g=ctx.createRadialGradient(r,r,0,r,r,r);
-  g.addColorStop(0,h+'ff');
-  g.addColorStop(0.2,h+'cc');
-  g.addColorStop(0.5,h+'55');
-  g.addColorStop(1,h+'00');
+  g.addColorStop(0,h+'ff');g.addColorStop(.2,h+'cc');g.addColorStop(.5,h+'55');g.addColorStop(1,h+'00');
   ctx.fillStyle=g;ctx.fillRect(0,0,sz,sz);
-  glowCache[hex]=new THREE.CanvasTexture(c);
-  return glowCache[hex];
+  glowCache[hex]=new THREE.CanvasTexture(c);return glowCache[hex];
 }
 
 // Nodes
@@ -286,19 +216,12 @@ EVT.forEach((ev,i)=>{
     new THREE.SphereGeometry(r,24,24),
     new THREE.MeshPhongMaterial({color:col.hex,emissive:col.hex,emissiveIntensity:.55,shininess:140})
   );
-  m.position.copy(pos);m.userData={ev,i,r};
-  pivot.add(m);meshes.push(m);
-
-  // Crisp per-node glow sprite (not screen-space bloom)
-  const sp=new THREE.Sprite(new THREE.SpriteMaterial({
-    map:mkGlow(col.hex),transparent:true,
-    blending:THREE.AdditiveBlending,depthWrite:false,opacity:.75
-  }));
+  m.position.copy(pos);m.userData={ev,i,r};pivot.add(m);meshes.push(m);
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:mkGlow(col.hex),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,opacity:.75}));
   sp.scale.set(r*4,r*4,1);sp.position.copy(pos);pivot.add(sp);glows.push(sp);
-
   const d=document.createElement('div');
   d.style.cssText='position:absolute;pointer-events:none;transform:translate(-50%,-100%);transition:opacity .18s;text-align:center';
-  d.innerHTML=`<div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;text-shadow:0 0 3px #000,0 0 8px #000,1px 1px 0 #000,-1px -1px 0 #000;font-family:system-ui;letter-spacing:.2px">${ev.label}</div><div style="font-size:11px;color:rgba(255,255,255,.55);white-space:nowrap;font-family:system-ui;text-shadow:0 0 3px #000,0 0 6px #000;margin-top:2px">${ev.date}</div>`;
+  d.innerHTML=`<div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;text-shadow:0 0 3px #000,0 0 8px #000,1px 1px 0 #000,-1px -1px 0 #000;letter-spacing:.2px">${ev.label}</div><div style="font-size:11px;color:rgba(255,255,255,.55);white-space:nowrap;text-shadow:0 0 3px #000,0 0 6px #000;margin-top:2px">${ev.date}</div>`;
   lblCont.appendChild(d);lbls.push(d);
 });
 document.getElementById('node-count').textContent=EVT.length+' EVENTS ON TIMELINE';
@@ -310,18 +233,19 @@ filterDefs.forEach(f=>{
   btn.dataset.k=f.k;btn.textContent=f.l;
   const col=f.k!=='all'?CATS[f.k]:null;
   btn.style.cssText=col
-    ?`padding:6px 18px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:1.5px solid ${col.css}99;background:${col.css}1a;color:${col.css};transition:all .18s;font-family:system-ui;white-space:nowrap`
-    :`padding:6px 18px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:1.5px solid rgba(255,255,255,.4);background:rgba(255,255,255,.07);color:rgba(255,255,255,.85);transition:all .18s;font-family:system-ui;white-space:nowrap`;
+    ?`padding:6px 18px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:1.5px solid ${col.css}99;background:${col.css}1a;color:${col.css};transition:all .18s;white-space:nowrap`
+    :`padding:6px 18px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:1.5px solid rgba(255,255,255,.4);background:rgba(255,255,255,.07);color:rgba(255,255,255,.85);transition:all .18s;white-space:nowrap`;
   btn.onclick=()=>setFilter(f.k);
   document.getElementById('filters').appendChild(btn);
 });
+
 function setFilter(k){
   document.querySelectorAll('#filters button').forEach(btn=>{
-    const bk=btn.dataset.k,on=bk===k;
-    const col=bk!=='all'?CATS[bk]:null;
-    if(on&&col){btn.style.background=col.css+'30';btn.style.borderColor=col.css;btn.style.color=col.css;}
-    else if(on){btn.style.background='rgba(255,255,255,.1)';btn.style.borderColor='rgba(255,255,255,.4)';btn.style.color='#fff';}
-    else{btn.style.background='rgba(0,0,0,.3)';btn.style.borderColor='rgba(255,255,255,.15)';btn.style.color='rgba(255,255,255,.45)';}
+    const bk=btn.dataset.k,on=bk===k,col=bk!=='all'?CATS[bk]:null;
+    if(on&&col){btn.style.background=col.css;btn.style.borderColor=col.css;btn.style.color='#fff';btn.style.boxShadow=`0 0 16px ${col.css}88`;}
+    else if(on){btn.style.background='rgba(255,255,255,.18)';btn.style.borderColor='rgba(255,255,255,.6)';btn.style.color='#fff';btn.style.boxShadow='none';}
+    else if(col){btn.style.background=col.css+'1a';btn.style.borderColor=col.css+'99';btn.style.color=col.css;btn.style.boxShadow='none';}
+    else{btn.style.background='rgba(255,255,255,.07)';btn.style.borderColor='rgba(255,255,255,.4)';btn.style.color='rgba(255,255,255,.85)';btn.style.boxShadow='none';}
   });
   meshes.forEach((m,i)=>{const v=k==='all'||m.userData.ev.cat===k;m.visible=v;glows[i].visible=v;lbls[i].style.opacity=v?'1':'0';});
   if(selIdx>=0&&meshes[selIdx]&&!meshes[selIdx].visible)closeInfo();
@@ -333,7 +257,7 @@ let drag=false,dragged=false,lmx=0,lmy=0,autoRot=true,autoT=null,selIdx=-1,hovId
 app.addEventListener('mousedown',e=>{drag=true;dragged=false;lmx=e.clientX;lmy=e.clientY;autoRot=false;clearTimeout(autoT);app.style.cursor='grabbing';});
 window.addEventListener('mousemove',e=>{
   if(drag){const dx=e.clientX-lmx,dy=e.clientY-lmy;if(Math.abs(dx)+Math.abs(dy)>3)dragged=true;pivot.rotation.y+=dx*.006;pivot.rotation.x=Math.max(-1.1,Math.min(1.1,pivot.rotation.x+dy*.006));lmx=e.clientX;lmy=e.clientY;}
-  else{const rect=app.getBoundingClientRect();mv.x=((e.clientX-rect.left)/W)*2-1;mv.y=-((e.clientY-rect.top)/H)*2+1;rc.setFromCamera(mv,camera);const vs=meshes.filter(m=>m.visible);const h=rc.intersectObjects(vs);const ph=hovIdx;hovIdx=h.length?h[0].object.userData.i:-1;if(hovIdx!==ph)app.style.cursor=hovIdx>=0?'pointer':'grab';}
+  else{const rect=app.getBoundingClientRect();mv.x=((e.clientX-rect.left)/W)*2-1;mv.y=-((e.clientY-rect.top)/H)*2+1;rc.setFromCamera(mv,camera);const h=rc.intersectObjects(meshes.filter(m=>m.visible));const ph=hovIdx;hovIdx=h.length?h[0].object.userData.i:-1;if(hovIdx!==ph)app.style.cursor=hovIdx>=0?'pointer':'grab';}
 });
 window.addEventListener('mouseup',()=>{drag=false;app.style.cursor=hovIdx>=0?'pointer':'grab';autoT=setTimeout(()=>{autoRot=true;},4000);});
 app.addEventListener('click',e=>{
@@ -377,37 +301,6 @@ function navNode(dir){
   selectNode(vis[(c+dir+vis.length)%vis.length]);
 }
 
-// Labels
-const tv=new THREE.Vector3();
-function updateLabels(){
-  meshes.forEach((m,i)=>{
-    const d=lbls[i];if(!m.visible){d.style.display='none';return;}d.style.display='block';
-    tv.copy(m.position);pivot.localToWorld(tv);tv.project(camera);
-    const sx=(tv.x*.5+.5)*W,sy=(-tv.y*.5+.5)*H;
-    d.style.left=sx+'px';d.style.top=(sy-m.userData.r*2-6)+'px';
-    const vis=tv.z<1;const isSel=i===selIdx;const isHov=i===hovIdx;
-    d.style.opacity=!vis?'0':isSel?'1':isHov?'.9':'.5';
-    d.firstChild.style.fontSize=isSel||isHov?'12px':'11px';
-  });
-}
-
-// Node animation
-function updateNodes(){
-  meshes.forEach((m,i)=>{
-    const isSel=i===selIdx,isHov=i===hovIdx;
-    const ts=isSel?1.8:isHov?1.35:1;
-    m.scale.setScalar(m.scale.x+(ts-m.scale.x)*.12);
-    const tei=isSel?.9:isHov?.7:.55;
-    m.material.emissiveIntensity+=(tei-m.material.emissiveIntensity)*.12;
-    const top=isSel?.95:isHov?.8:.72;
-    glows[i].material.opacity+=(top-glows[i].material.opacity)*.12;
-    const tgs=m.userData.r*7*(isSel?2.2:isHov?1.6:1);
-    const cgs=glows[i].scale.x;glows[i].scale.set(cgs+(tgs-cgs)*.12,cgs+(tgs-cgs)*.12,1);
-  });
-}
-
-window.addEventListener('resize',()=>{W=app.clientWidth;H=app.clientHeight;camera.aspect=W/H;camera.updateProjectionMatrix();renderer.setSize(W,H);});
-
 function toggleAbout(){
   const panel=document.getElementById('about');
   const btn=document.getElementById('about-btn');
@@ -417,6 +310,40 @@ function toggleAbout(){
   btn.style.color=open?'rgba(255,255,255,.65)':'#fff';
   btn.style.borderColor=open?'rgba(255,255,255,.28)':'rgba(255,255,255,.5)';
 }
+
+// Labels
+const tv=new THREE.Vector3();
+function updateLabels(){
+  meshes.forEach((m,i)=>{
+    const d=lbls[i];if(!m.visible){d.style.display='none';return;}d.style.display='block';
+    tv.copy(m.position);pivot.localToWorld(tv);tv.project(camera);
+    const sx=(tv.x*.5+.5)*W,sy=(-tv.y*.5+.5)*H;
+    d.style.left=sx+'px';d.style.top=(sy-m.userData.r*2-6)+'px';
+    const vis=tv.z<1,isSel=i===selIdx,isHov=i===hovIdx;
+    d.style.opacity=!vis?'0':isSel?'1':isHov?'.9':'.5';
+    d.firstChild.style.fontSize=isSel||isHov?'14px':'13px';
+  });
+}
+
+function updateNodes(){
+  meshes.forEach((m,i)=>{
+    const isSel=i===selIdx,isHov=i===hovIdx;
+    const ts=isSel?1.8:isHov?1.35:1;
+    m.scale.setScalar(m.scale.x+(ts-m.scale.x)*.12);
+    const tei=isSel?.9:isHov?.7:.55;
+    m.material.emissiveIntensity+=(tei-m.material.emissiveIntensity)*.12;
+    const top=isSel?.95:isHov?.8:.72;
+    glows[i].material.opacity+=(top-glows[i].material.opacity)*.12;
+    const tgs=m.userData.r*4*(isSel?2.2:isHov?1.6:1);
+    const cgs=glows[i].scale.x;glows[i].scale.set(cgs+(tgs-cgs)*.12,cgs+(tgs-cgs)*.12,1);
+  });
+}
+
+window.addEventListener('resize',()=>{
+  W=window.innerWidth;H=window.innerHeight;
+  camera.aspect=W/H;camera.updateProjectionMatrix();
+  renderer.setSize(W,H);
+});
 
 function animate(){
   requestAnimationFrame(animate);
@@ -428,7 +355,6 @@ function animate(){
   renderer.render(scene,camera);
 }
 animate();
-setTimeout(dismissLoader, 2800);
 </script>
 </body>
 </html>
