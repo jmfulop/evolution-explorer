@@ -1,6 +1,17 @@
-<style>*{box-sizing:border-box;margin:0;padding:0}</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Human Evolution Explorer</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #000408; }
+  </style>
+</head>
+<body>
 
-<div id="app" style="position:relative;width:100%;height:700px;background:#000;border-radius:12px;overflow:hidden;cursor:grab;user-select:none;font-family:system-ui,sans-serif">
+<div id="app" style="position:relative;width:100%;height:100vh;background:#000;overflow:hidden;cursor:grab;user-select:none;font-family:system-ui,sans-serif">
   <canvas id="c" style="display:block"></canvas>
 
   <div style="position:absolute;top:20px;left:24px;pointer-events:none">
@@ -10,7 +21,6 @@
   </div>
 
   <div id="filters" style="position:absolute;top:20px;right:20px;display:flex;flex-direction:column;gap:6px;align-items:flex-end"></div>
-
   <div id="labels" style="position:absolute;inset:0;pointer-events:none;overflow:hidden"></div>
 
   <div id="info" style="position:absolute;bottom:0;left:0;right:0;padding:18px 24px 22px;background:linear-gradient(to top,rgba(0,3,10,.97) 0%,rgba(0,3,10,.88) 100%);transform:translateY(100%);transition:transform .32s cubic-bezier(.4,0,.2,1)">
@@ -60,7 +70,6 @@ const pl=new THREE.PointLight(0x88aaff,2,500);
 pl.position.set(0,0,100);
 scene.add(pl);
 
-// Stars
 (()=>{
   const n=5000,pos=new Float32Array(n*3);
   for(let i=0;i<n;i++){
@@ -101,7 +110,6 @@ const EVT=[
   {cat:'ai',label:'Conscious Evolution',date:'2035–2060 (projected)',sz:5,desc:'CRISPR germline editing, brain-computer interfaces, and life extension research converge. For the first time in history, a species consciously chooses the direction of its own evolution.'},
 ];
 
-// Helix
 const HR=26,HH=165,HT=2.2,NS=280;
 function hpt(i,tot,off){
   const t=(i/tot)*Math.PI*2*HT,y=(i/tot-.5)*HH;
@@ -118,7 +126,6 @@ for(let i=0;i<=42;i++){
   pivot.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([p1,p2]),rm));
 }
 
-// Glow texture cache
 const glowCache={};
 function mkGlow(hex){
   if(glowCache[hex])return glowCache[hex];
@@ -132,7 +139,6 @@ function mkGlow(hex){
   return glowCache[hex];
 }
 
-// Nodes
 const meshes=[],glows=[],lbls=[];
 const lblCont=document.getElementById('labels');
 EVT.forEach((ev,i)=>{
@@ -149,23 +155,20 @@ EVT.forEach((ev,i)=>{
   sp.scale.set(r*5,r*5,1);sp.position.copy(pos);pivot.add(sp);glows.push(sp);
   const d=document.createElement('div');
   d.style.cssText='position:absolute;pointer-events:none;transform:translate(-50%,-100%);transition:opacity .18s;text-align:center';
-  d.innerHTML=`<div class="ln" style="font-size:9.5px;font-weight:600;color:rgba(255,255,255,.78);white-space:nowrap;text-shadow:0 0 8px #000,0 0 14px #000">${ev.label}</div><div style="font-size:8px;color:rgba(255,255,255,.35);white-space:nowrap">${ev.date}</div>`;
+  d.innerHTML=`<div style="font-size:9.5px;font-weight:600;color:rgba(255,255,255,.78);white-space:nowrap;text-shadow:0 0 8px #000,0 0 14px #000;font-family:system-ui">${ev.label}</div><div style="font-size:8px;color:rgba(255,255,255,.35);white-space:nowrap;font-family:system-ui">${ev.date}</div>`;
   lblCont.appendChild(d);lbls.push(d);
 });
 document.getElementById('node-count').textContent=EVT.length+' EVENTS ON TIMELINE';
 
-// Filters
 const filterDefs=[{k:'all',l:'All'},{k:'bio',l:'Biological'},{k:'cog',l:'Cognitive'},{k:'civ',l:'Civilisational'},{k:'ai',l:'AI & Future'}];
-let activeF='all';
 filterDefs.forEach(f=>{
   const btn=document.createElement('button');
   btn.dataset.k=f.k;btn.textContent=f.l;
-  btn.style.cssText='padding:4px 12px;border-radius:16px;font-size:9.5px;font-weight:600;letter-spacing:.5px;cursor:pointer;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.45);color:rgba(255,255,255,.5);transition:all .15s';
+  btn.style.cssText='padding:4px 12px;border-radius:16px;font-size:9.5px;font-weight:600;letter-spacing:.5px;cursor:pointer;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.45);color:rgba(255,255,255,.5);transition:all .15s;font-family:system-ui';
   btn.onclick=()=>setFilter(f.k);
   document.getElementById('filters').appendChild(btn);
 });
 function setFilter(k){
-  activeF=k;
   document.querySelectorAll('#filters button').forEach(btn=>{
     const bk=btn.dataset.k,on=bk===k;
     const col=bk!=='all'?CATS[bk]:null;
@@ -177,8 +180,7 @@ function setFilter(k){
   if(selIdx>=0&&meshes[selIdx]&&!meshes[selIdx].visible)closeInfo();
 }
 
-// Interaction
-const rc=new THREE.Raycaster();const mv=new THREE.Vector2();
+const rc=new THREE.Raycaster(),mv=new THREE.Vector2();
 let drag=false,dragged=false,lmx=0,lmy=0,autoRot=true,autoT=null,selIdx=-1,hovIdx=-1;
 app.addEventListener('mousedown',e=>{drag=true;dragged=false;lmx=e.clientX;lmy=e.clientY;autoRot=false;clearTimeout(autoT);app.style.cursor='grabbing';});
 window.addEventListener('mousemove',e=>{
@@ -217,7 +219,6 @@ function navNode(dir){
   selectNode(vis[(c+dir+vis.length)%vis.length]);
 }
 
-// Label update
 const tv=new THREE.Vector3();
 function updateLabels(){
   meshes.forEach((m,i)=>{
@@ -231,20 +232,21 @@ function updateLabels(){
   });
 }
 
-// Node animation
 function updateNodes(){
   meshes.forEach((m,i)=>{
     const isSel=i===selIdx,isHov=i===hovIdx;
     const ts=isSel?1.75:isHov?1.3:1;
-    const cs=m.scale.x;const ns=cs+(ts-cs)*.12;m.scale.setScalar(ns);
+    const cs=m.scale.x;m.scale.setScalar(cs+(ts-cs)*.12);
     const tei=isSel?.72:isHov?.55:.3;m.material.emissiveIntensity+=(tei-m.material.emissiveIntensity)*.12;
     const top=isSel?.92:isHov?.72:.52;glows[i].material.opacity+=(top-glows[i].material.opacity)*.12;
-    const tgs=m.userData.r*5*(isSel?1.9:isHov?1.45:1);const cgs=glows[i].scale.x;const ngs=cgs+(tgs-cgs)*.12;glows[i].scale.set(ngs,ngs,1);
+    const tgs=m.userData.r*5*(isSel?1.9:isHov?1.45:1);const cgs=glows[i].scale.x;glows[i].scale.set(cgs+(tgs-cgs)*.12,cgs+(tgs-cgs)*.12,1);
   });
 }
 
 window.addEventListener('resize',()=>{W=app.clientWidth;H=app.clientHeight;camera.aspect=W/H;camera.updateProjectionMatrix();renderer.setSize(W,H);});
-
 function animate(){requestAnimationFrame(animate);if(autoRot)pivot.rotation.y+=.0022;updateNodes();updateLabels();renderer.render(scene,camera);}
 animate();
 </script>
+
+</body>
+</html>
