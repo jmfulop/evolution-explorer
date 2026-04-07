@@ -61,7 +61,7 @@ const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
 renderer.setSize(W,H);
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 renderer.toneMapping=THREE.ReinhardToneMapping;
-renderer.toneMappingExposure=1.0;
+renderer.toneMappingExposure=0.9;
 
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x000408);
@@ -75,7 +75,7 @@ scene.add(pivot);
 
 // Bloom composer
 const renderPass=new THREE.RenderPass(scene,camera);
-const bloomPass=new THREE.UnrealBloomPass(new THREE.Vector2(W,H),0.7,0.4,0.28);
+const bloomPass=new THREE.UnrealBloomPass(new THREE.Vector2(W,H),0.4,0.3,0.38);
 const composer=new THREE.EffectComposer(renderer);
 composer.addPass(renderPass);
 composer.addPass(bloomPass);
@@ -162,7 +162,7 @@ EVT.forEach((ev,i)=>{
   const col=CATS[ev.cat],r=ev.sz||4;
   const m=new THREE.Mesh(
     new THREE.SphereGeometry(r,20,20),
-    new THREE.MeshPhongMaterial({color:col.hex,emissive:col.hex,emissiveIntensity:.3,shininess:90})
+    new THREE.MeshPhongMaterial({color:col.hex,emissive:col.hex,emissiveIntensity:.12,shininess:90})
   );
   m.position.copy(pos);m.userData={ev,i,r};
   pivot.add(m);meshes.push(m);
@@ -170,7 +170,7 @@ EVT.forEach((ev,i)=>{
   sp.scale.set(r*5,r*5,1);sp.position.copy(pos);pivot.add(sp);glows.push(sp);
   const d=document.createElement('div');
   d.style.cssText='position:absolute;pointer-events:none;transform:translate(-50%,-100%);transition:opacity .18s;text-align:center';
-  d.innerHTML=`<div style="font-size:9.5px;font-weight:600;color:rgba(255,255,255,.78);white-space:nowrap;text-shadow:0 0 8px #000,0 0 14px #000;font-family:system-ui">${ev.label}</div><div style="font-size:8px;color:rgba(255,255,255,.35);white-space:nowrap;font-family:system-ui">${ev.date}</div>`;
+  d.innerHTML=`<div style="font-size:9.5px;font-weight:600;color:rgba(255,255,255,.92);white-space:nowrap;text-shadow:0 0 4px #000,0 0 8px #000,0 0 16px #000,1px 1px 0 #000,-1px -1px 0 #000;font-family:system-ui">${ev.label}</div><div style="font-size:8px;color:rgba(255,255,255,.5);white-space:nowrap;font-family:system-ui;text-shadow:0 0 4px #000,0 0 8px #000">${ev.date}</div>`;
   lblCont.appendChild(d);lbls.push(d);
 });
 document.getElementById('node-count').textContent=EVT.length+' EVENTS ON TIMELINE';
@@ -252,7 +252,7 @@ function updateNodes(){
     const isSel=i===selIdx,isHov=i===hovIdx;
     const ts=isSel?1.75:isHov?1.3:1;
     const cs=m.scale.x;m.scale.setScalar(cs+(ts-cs)*.12);
-    const tei=isSel?.72:isHov?.55:.3;m.material.emissiveIntensity+=(tei-m.material.emissiveIntensity)*.12;
+    const tei=isSel?.45:isHov?.3:.12;m.material.emissiveIntensity+=(tei-m.material.emissiveIntensity)*.12;
     const top=isSel?.92:isHov?.72:.52;glows[i].material.opacity+=(top-glows[i].material.opacity)*.12;
     const tgs=m.userData.r*5*(isSel?1.9:isHov?1.45:1);const cgs=glows[i].scale.x;glows[i].scale.set(cgs+(tgs-cgs)*.12,cgs+(tgs-cgs)*.12,1);
   });
