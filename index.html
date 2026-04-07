@@ -19,8 +19,7 @@
       <div style="font-size:22px;font-weight:700;color:#fff;letter-spacing:.3px">Human Evolution Explorer</div>
       <div style="font-size:10px;color:rgba(255,255,255,.4);letter-spacing:2.5px;text-transform:uppercase;margin-top:3px">85 million years of history</div>
     </div>
-    <div id="filters" style="display:flex;gap:6px;align-items:center;pointer-events:all"></div>
-    <div style="font-size:9px;color:rgba(255,255,255,.18);letter-spacing:.8px;flex-shrink:0;pointer-events:none">DRAG · CLICK TO EXPLORE</div>
+    <div id="filters" style="display:flex;gap:8px;align-items:center;pointer-events:all"></div>
   </div>
 
   <div id="labels" style="position:absolute;inset:0;pointer-events:none;overflow:hidden"></div>
@@ -196,7 +195,10 @@ const filterDefs=[{k:'all',l:'All'},{k:'bio',l:'Biological'},{k:'cog',l:'Cogniti
 filterDefs.forEach(f=>{
   const btn=document.createElement('button');
   btn.dataset.k=f.k;btn.textContent=f.l;
-  btn.style.cssText='padding:5px 14px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.4px;cursor:pointer;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.3);color:rgba(255,255,255,.45);transition:all .15s;font-family:system-ui;white-space:nowrap';
+  const col=f.k!=='all'?CATS[f.k]:null;
+  btn.style.cssText=col
+    ?`padding:6px 18px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:1.5px solid ${col.css}99;background:${col.css}1a;color:${col.css};transition:all .18s;font-family:system-ui;white-space:nowrap`
+    :`padding:6px 18px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:1.5px solid rgba(255,255,255,.4);background:rgba(255,255,255,.07);color:rgba(255,255,255,.85);transition:all .18s;font-family:system-ui;white-space:nowrap`;
   btn.onclick=()=>setFilter(f.k);
   document.getElementById('filters').appendChild(btn);
 });
