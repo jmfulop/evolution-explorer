@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+$html = @'
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -362,3 +363,12 @@ animate();
 </script>
 </body>
 </html>
+'@
+
+Set-Content -Path "index.html" -Value $html -Encoding UTF8
+Write-Host "index.html written successfully" -ForegroundColor Green
+
+git add .
+git commit -m "fix: complete clean rewrite, about panel and loader working"
+git push
+Write-Host "Pushed to GitHub - Vercel will deploy in ~30 seconds" -ForegroundColor Cyan
