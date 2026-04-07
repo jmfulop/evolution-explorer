@@ -25,7 +25,7 @@
   <canvas id="c"></canvas>
 
   <!-- TOP BAR -->
-  <div id="topbar">
+  <div id="topbar" style="pointer-events:all">
     <div style="display:flex;align-items:center;gap:14px;flex-shrink:0">
       <div>
         <div style="font-size:22px;font-weight:700;color:#fff;letter-spacing:.3px">Human Evolution Explorer</div>
@@ -50,6 +50,7 @@
   </div>
   <style>
     @keyframes slide{0%{left:-100%}100%{left:100%}}
+    #topbar{pointer-events:all}
   </style>
   <div id="labels"></div>
 
