@@ -47,6 +47,12 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
 <script>
 const app=document.getElementById('app'),cv=document.getElementById('c');
 let W=app.clientWidth,H=app.clientHeight;
@@ -54,6 +60,8 @@ let W=app.clientWidth,H=app.clientHeight;
 const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
 renderer.setSize(W,H);
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.toneMapping=THREE.ReinhardToneMapping;
+renderer.toneMappingExposure=1.2;
 
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x000408);
@@ -64,6 +72,13 @@ camera.position.z=155;
 
 const pivot=new THREE.Group();
 scene.add(pivot);
+
+// Bloom composer
+const renderPass=new THREE.RenderPass(scene,camera);
+const bloomPass=new THREE.UnrealBloomPass(new THREE.Vector2(W,H),1.4,0.5,0.1);
+const composer=new THREE.EffectComposer(renderer);
+composer.addPass(renderPass);
+composer.addPass(bloomPass);
 
 scene.add(new THREE.AmbientLight(0x224466,1));
 const pl=new THREE.PointLight(0x88aaff,2,500);
@@ -243,8 +258,8 @@ function updateNodes(){
   });
 }
 
-window.addEventListener('resize',()=>{W=app.clientWidth;H=app.clientHeight;camera.aspect=W/H;camera.updateProjectionMatrix();renderer.setSize(W,H);});
-function animate(){requestAnimationFrame(animate);if(autoRot)pivot.rotation.y+=.0022;updateNodes();updateLabels();renderer.render(scene,camera);}
+window.addEventListener('resize',()=>{W=app.clientWidth;H=app.clientHeight;camera.aspect=W/H;camera.updateProjectionMatrix();renderer.setSize(W,H);composer.setSize(W,H);});
+function animate(){requestAnimationFrame(animate);if(autoRot)pivot.rotation.y+=.0022;updateNodes();updateLabels();composer.render();}
 animate();
 </script>
 
