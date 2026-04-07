@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+$html = @'
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -314,3 +315,11 @@ animate();
 </script>
 </body>
 </html>
+'@
+
+Set-Content -Path "index.html" -Value $html -Encoding UTF8
+Write-Host "index.html written" -ForegroundColor Green
+git add .
+git commit -m "fix: remove loader, about panel working"
+git push
+Write-Host "Done - wait 30s then refresh" -ForegroundColor Cyan
