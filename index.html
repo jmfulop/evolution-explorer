@@ -69,6 +69,9 @@ scene.fog=new THREE.FogExp2(0x000408,0.0005);
 
 const camera=new THREE.PerspectiveCamera(55,W/H,0.1,3000);
 camera.position.z=155;
+const camTarget=new THREE.Vector3(0,0,155);
+const lookTarget=new THREE.Vector3(0,0,0);
+const currentLook=new THREE.Vector3(0,0,0);
 
 const pivot=new THREE.Group();
 scene.add(pivot);
@@ -226,9 +229,18 @@ function selectNode(idx){
   document.getElementById('info-desc').textContent=ev.desc;
   document.getElementById('info-counter').textContent=(idx+1)+' / '+EVT.length;
   document.getElementById('info').style.transform='translateY(0)';
+  autoRot=false;clearTimeout(autoT);
+  const wp=new THREE.Vector3();wp.copy(meshes[idx].position);pivot.localToWorld(wp);
+  const dir=wp.clone().sub(camera.position).normalize();
+  camTarget.copy(wp).sub(dir.multiplyScalar(60));
+  lookTarget.copy(wp);
 }
-function closeInfo(){selIdx=-1;document.getElementById('info').style.transform='translateY(100%)';}
-function navNode(dir){
+function closeInfo(){
+  selIdx=-1;
+  document.getElementById('info').style.transform='translateY(100%)';
+  camTarget.set(0,0,155);lookTarget.set(0,0,0);
+  autoT=setTimeout(()=>{autoRot=true;},2500);
+}function navNode(dir){
   const vis=meshes.map((m,i)=>m.visible?i:-1).filter(i=>i>=0);
   if(!vis.length)return;const c=vis.indexOf(selIdx);
   selectNode(vis[(c+dir+vis.length)%vis.length]);
@@ -259,7 +271,7 @@ function updateNodes(){
 }
 
 window.addEventListener('resize',()=>{W=app.clientWidth;H=app.clientHeight;camera.aspect=W/H;camera.updateProjectionMatrix();renderer.setSize(W,H);composer.setSize(W,H);});
-function animate(){requestAnimationFrame(animate);if(autoRot)pivot.rotation.y+=.0022;updateNodes();updateLabels();composer.render();}
+function animate(){requestAnimationFrame(animate);if(autoRot)pivot.rotation.y+=.0022;camera.position.lerp(camTarget,.045);currentLook.lerp(lookTarget,.045);camera.lookAt(currentLook);updateNodes();updateLabels();composer.render();}
 animate();
 </script>
 
