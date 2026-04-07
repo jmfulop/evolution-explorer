@@ -36,7 +36,21 @@
     <div id="filters" style="display:flex;gap:8px;align-items:center"></div>
   </div>
 
-  <!-- FLOATING LABELS -->
+  <!-- LOADING SCREEN -->
+  <div id="loader" style="position:absolute;inset:0;z-index:100;background:#000408;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .8s ease">
+    <div id="loader-helix" style="position:relative;width:60px;height:120px;margin-bottom:32px">
+      <canvas id="loader-c" width="60" height="120"></canvas>
+    </div>
+    <div style="font-size:11px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:12px">Initialising</div>
+    <div style="font-size:22px;font-weight:700;color:#fff;letter-spacing:.5px;margin-bottom:6px">Human Evolution Explorer</div>
+    <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3)">85 million years of history</div>
+    <div style="margin-top:28px;width:180px;height:1px;background:rgba(255,255,255,.08);position:relative;overflow:hidden">
+      <div id="loader-bar" style="position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,#1D9E75,#7F77DD,transparent);animation:slide 1.4s ease-in-out infinite"></div>
+    </div>
+  </div>
+  <style>
+    @keyframes slide{0%{left:-100%}100%{left:100%}}
+  </style>
   <div id="labels"></div>
 
   <!-- NODE INFO PANEL -->
@@ -130,7 +144,45 @@ scene.add(new THREE.AmbientLight(0x334466,1.2));
 const pl=new THREE.PointLight(0x99bbff,2.5,600);
 pl.position.set(0,0,120);scene.add(pl);
 
-// Stars
+// Loading screen animation
+const loaderC=document.getElementById('loader-c');
+const lctx=loaderC.getContext('2d');
+let loaderT=0;
+function drawLoader(){
+  lctx.clearRect(0,0,60,120);
+  for(let i=0;i<=24;i++){
+    const t=(i/24)*Math.PI*4+loaderT;
+    const x1=30+18*Math.cos(t),y=i*(120/24);
+    const x2=30+18*Math.cos(t+Math.PI);
+    const a=Math.abs(Math.cos(t));
+    lctx.beginPath();lctx.arc(x1,y,2.5,0,Math.PI*2);
+    lctx.fillStyle=`rgba(29,158,117,${0.4+a*0.6})`;lctx.fill();
+    lctx.beginPath();lctx.arc(x2,y,2.5,0,Math.PI*2);
+    lctx.fillStyle=`rgba(127,119,221,${0.4+(1-a)*0.6})`;lctx.fill();
+    if(i<24){
+      const nt=((i+1)/24)*Math.PI*4+loaderT;
+      const nx1=30+18*Math.cos(nt),ny=(i+1)*(120/24);
+      lctx.beginPath();lctx.moveTo(x1,y);lctx.lineTo(nx1,ny);
+      lctx.strokeStyle='rgba(29,158,117,.3)';lctx.lineWidth=1;lctx.stroke();
+      const nx2=30+18*Math.cos(nt+Math.PI);
+      lctx.beginPath();lctx.moveTo(x2,y);lctx.lineTo(nx2,ny);
+      lctx.strokeStyle='rgba(127,119,221,.25)';lctx.lineWidth=1;lctx.stroke();
+    }
+    if(i%4===0){
+      lctx.beginPath();lctx.moveTo(x1,y);lctx.lineTo(x2,y);
+      lctx.strokeStyle='rgba(255,255,255,.12)';lctx.lineWidth=.8;lctx.stroke();
+    }
+  }
+  loaderT+=0.06;
+}
+let loaderAnim=setInterval(drawLoader,30);
+
+function hideLoader(){
+  const l=document.getElementById('loader');
+  l.style.opacity='0';
+  setTimeout(()=>{l.style.display='none';clearInterval(loaderAnim);},800);
+}
+setTimeout(hideLoader,2800);
 (()=>{
   [5000,2000].forEach((n,li)=>{
     const pos=new Float32Array(n*3);
