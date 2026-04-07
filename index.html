@@ -181,7 +181,8 @@ let loaderAnim=setInterval(drawLoader,30);
 function hideLoader(){
   const l=document.getElementById('loader');
   l.style.opacity='0';
-  setTimeout(()=>{l.style.display='none';clearInterval(loaderAnim);},800);
+  l.style.pointerEvents='none';
+  setTimeout(()=>{l.remove();clearInterval(loaderAnim);},900);
 }
 setTimeout(hideLoader,2800);
 (()=>{
