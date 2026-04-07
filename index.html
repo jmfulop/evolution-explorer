@@ -261,17 +261,17 @@ function selectNode(idx){
   const dir=wp.clone().sub(camera.position).normalize();
   camTarget.copy(wp).sub(dir.multiplyScalar(95));lookTarget.copy(wp);
 }
-function closeInfo(){
+window.closeInfo=function(){
   selIdx=-1;document.getElementById('info').style.transform='translateY(100%)';
   camTarget.set(0,0,185);lookTarget.set(0,0,0);
   autoT=setTimeout(()=>{autoRot=true;},2500);
 }
-function navNode(dir){
+window.navNode=function(dir){
   const vis=meshes.map((m,i)=>m.visible?i:-1).filter(i=>i>=0);
   if(!vis.length)return;const c=vis.indexOf(selIdx);
   selectNode(vis[(c+dir+vis.length)%vis.length]);
 }
-function toggleAbout(){
+window.toggleAbout=function(){
   aboutOpen=!aboutOpen;
   document.getElementById('about').style.transform=aboutOpen?'translateX(0%)':'translateX(100%)';
   const btn=document.getElementById('about-btn');
@@ -314,3 +314,4 @@ animate();
 </script>
 </body>
 </html>
+
