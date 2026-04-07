@@ -1,0 +1,250 @@
+<style>*{box-sizing:border-box;margin:0;padding:0}</style>
+
+<div id="app" style="position:relative;width:100%;height:700px;background:#000;border-radius:12px;overflow:hidden;cursor:grab;user-select:none;font-family:system-ui,sans-serif">
+  <canvas id="c" style="display:block"></canvas>
+
+  <div style="position:absolute;top:20px;left:24px;pointer-events:none">
+    <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:5px">Human Evolution Explorer</div>
+    <div style="font-size:22px;font-weight:700;color:#fff;line-height:1.1">85 Million Years</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.38);margin-top:2px">of Human History</div>
+  </div>
+
+  <div id="filters" style="position:absolute;top:20px;right:20px;display:flex;flex-direction:column;gap:6px;align-items:flex-end"></div>
+
+  <div id="labels" style="position:absolute;inset:0;pointer-events:none;overflow:hidden"></div>
+
+  <div id="info" style="position:absolute;bottom:0;left:0;right:0;padding:18px 24px 22px;background:linear-gradient(to top,rgba(0,3,10,.97) 0%,rgba(0,3,10,.88) 100%);transform:translateY(100%);transition:transform .32s cubic-bezier(.4,0,.2,1)">
+    <div style="max-width:680px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span id="info-badge" style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:20px">BIO</span>
+          <span id="info-date" style="font-size:12px;color:rgba(255,255,255,.42)"></span>
+        </div>
+        <button onclick="closeInfo()" style="background:none;border:none;color:rgba(255,255,255,.38);cursor:pointer;font-size:22px;line-height:1;padding:0">×</button>
+      </div>
+      <div id="info-name" style="font-size:19px;font-weight:700;color:#fff;margin-bottom:6px"></div>
+      <div id="info-desc" style="font-size:13px;color:rgba(255,255,255,.58);line-height:1.72;max-width:580px"></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:14px">
+        <button onclick="navNode(-1)" style="padding:5px 15px;border-radius:20px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.04);color:rgba(255,255,255,.6);cursor:pointer;font-size:11px">← Prev</button>
+        <button onclick="navNode(1)" style="padding:5px 15px;border-radius:20px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.04);color:rgba(255,255,255,.6);cursor:pointer;font-size:11px">Next →</button>
+        <span id="info-counter" style="font-size:10px;color:rgba(255,255,255,.22);margin-left:4px"></span>
+      </div>
+    </div>
+  </div>
+
+  <div style="position:absolute;bottom:20px;right:20px;font-size:9px;color:rgba(255,255,255,.2);letter-spacing:.8px;pointer-events:none">DRAG · CLICK TO EXPLORE</div>
+  <div id="node-count" style="position:absolute;bottom:20px;left:24px;font-size:9px;color:rgba(255,255,255,.2);letter-spacing:.8px;pointer-events:none"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const app=document.getElementById('app'),cv=document.getElementById('c');
+let W=app.clientWidth,H=app.clientHeight;
+
+const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+renderer.setSize(W,H);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x000408);
+scene.fog=new THREE.FogExp2(0x000408,0.0005);
+
+const camera=new THREE.PerspectiveCamera(55,W/H,0.1,3000);
+camera.position.z=155;
+
+const pivot=new THREE.Group();
+scene.add(pivot);
+
+scene.add(new THREE.AmbientLight(0x224466,1));
+const pl=new THREE.PointLight(0x88aaff,2,500);
+pl.position.set(0,0,100);
+scene.add(pl);
+
+// Stars
+(()=>{
+  const n=5000,pos=new Float32Array(n*3);
+  for(let i=0;i<n;i++){
+    const r=500+Math.random()*1500,th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1);
+    pos[i*3]=r*Math.sin(ph)*Math.cos(th);pos[i*3+1]=r*Math.sin(ph)*Math.sin(th);pos[i*3+2]=r*Math.cos(ph);
+  }
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:0xffffff,size:1.3,sizeAttenuation:true,transparent:true,opacity:0.65})));
+})();
+
+const CATS={
+  bio:{hex:0x1D9E75,css:'#1D9E75',label:'Biological'},
+  cog:{hex:0x7F77DD,css:'#7F77DD',label:'Cognitive'},
+  civ:{hex:0xBA7517,css:'#BA7517',label:'Civilisational'},
+  ai: {hex:0xD85A30,css:'#D85A30',label:'AI & Future'}
+};
+
+const EVT=[
+  {cat:'bio',label:'Primate Origins',date:'85 million years ago',sz:5.5,desc:'Primates diverge from other mammals during the Late Cretaceous. This ancient lineage ultimately produces all great apes — and humanity itself.'},
+  {cat:'bio',label:'Bipedal Ancestor',date:'~7 million years ago',sz:4,desc:'Sahelanthropus tchadensis may have walked upright. A 2026 study found strong anatomical evidence for bipedalism — predating Lucy by over 3 million years.'},
+  {cat:'bio',label:'Australopithecines',date:'3–4 million years ago',sz:4,desc:"'Lucy' and relatives walk the African savanna. 2025 research confirmed multiple Australopithecus species coexisting simultaneously — no single ladder of progress."},
+  {cat:'bio',label:'Genus Homo',date:'~2.8 million years ago',sz:4.5,desc:'First members of our genus appear. Larger brains, reduced jaw size, and greater dietary flexibility mark this critical transition.'},
+  {cat:'cog',label:'First Stone Tools',date:'~2.6 million years ago',sz:4,desc:'Oldowan flaked stones — the earliest deliberate tool use. Requires planning, motor control, and cross-generational knowledge transmission.'},
+  {cat:'bio',label:'Five Lineages Diverge',date:'~1 million years ago',sz:5.5,desc:'A landmark 2025 Science study (Yunxian 2 skull) showed all five major human lineages diverged more than a million years ago — double previous estimates.'},
+  {cat:'bio',label:'Homo sapiens Emerges',date:'~300,000 years ago',sz:6.5,desc:"Modern humans evolve in Africa. A 2025 Cambridge study found we are a merger of two populations separated for 1.5 million years — 20% of our DNA from a mysterious 'Population B' concentrated in brain-function genes."},
+  {cat:'cog',label:'Symbolic Art',date:'~100,000 years ago',sz:4.5,desc:'Ochre engravings at Blombos Cave, South Africa. PNAS research found these evolved over 30,000 years to become more salient and memorable — adaptive tools for the mind.'},
+  {cat:'cog',label:'Language Revolution',date:'~75,000 years ago',sz:5,desc:'Language transforms from survival replication into a complex recursive symbolic system, enabling abstract thought about non-present times and places.'},
+  {cat:'bio',label:'Out of Africa',date:'~50,000 years ago',sz:4.5,desc:'Small bands disperse globally. Along the way they interbreed with Neanderthals (~2% of non-African DNA) and Denisovans — contributing lasting immune and cognitive adaptations.'},
+  {cat:'cog',label:'Cultural Explosion',date:'~40,000 years ago',sz:5,desc:'Cave paintings, bone flutes, figurines, ritual burials across Eurasia. Population density now large enough to sustain high-fidelity cumulative culture.'},
+  {cat:'civ',label:'Agricultural Revolution',date:'~12,000 years ago',sz:5.5,desc:'Farming transforms everything: surplus, sedentism, hierarchy, population growth. Also reshapes human skeletons, introduces new diseases, and alters selection pressures.'},
+  {cat:'civ',label:'First Civilisations',date:'~5,000 years ago',sz:5,desc:'Writing, cities, law, and long-distance trade emerge in Mesopotamia, Egypt, and the Indus Valley. The first accumulation of shared institutional knowledge at scale.'},
+  {cat:'civ',label:'The Axial Age',date:'800–200 BCE',sz:4,desc:'Greek philosophy, Buddhism, Confucianism, and Abrahamic traditions emerge simultaneously across Eurasia — a revolution in meaning-making.'},
+  {cat:'civ',label:'Scientific Revolution',date:'1500s–1900s',sz:4.5,desc:'Systematic empiricism, printing, steam, and global trade transform production, knowledge, and population. Life expectancy begins its long climb.'},
+  {cat:'ai',label:'DNA Decoded',date:'1953–2003',sz:5,desc:'Watson, Crick, and Franklin identify the double helix (1953). The Human Genome Project sequences all 3 billion base pairs (2003). Humanity now reads the code of its own evolution.'},
+  {cat:'ai',label:'CRISPR Gene Editing',date:'2012',sz:5,desc:'Doudna and Charpentier develop CRISPR-Cas9 (Nobel 2020). For the first time in 4 billion years of life on Earth, a species can deliberately edit its own genome.'},
+  {cat:'ai',label:'AI Revolution',date:'2023–2025',sz:5.5,desc:'Large language models achieve expert-level performance in narrow domains. The externalisation of reasoning begins. The cognitive niche expands beyond biological brains for the first time.'},
+  {cat:'ai',label:'Conscious Evolution',date:'2035–2060 (projected)',sz:5,desc:'CRISPR germline editing, brain-computer interfaces, and life extension research converge. For the first time in history, a species consciously chooses the direction of its own evolution.'},
+];
+
+// Helix
+const HR=26,HH=165,HT=2.2,NS=280;
+function hpt(i,tot,off){
+  const t=(i/tot)*Math.PI*2*HT,y=(i/tot-.5)*HH;
+  return new THREE.Vector3(HR*Math.cos(t+off),y,HR*Math.sin(t+off));
+}
+const s1=[],s2=[];
+for(let i=0;i<=NS;i++){s1.push(hpt(i,NS,0));s2.push(hpt(i,NS,Math.PI));}
+const mkLine=(pts,col,op)=>{const g=new THREE.BufferGeometry().setFromPoints(pts);return new THREE.Line(g,new THREE.LineBasicMaterial({color:col,opacity:op,transparent:true}));};
+pivot.add(mkLine(s1,0x1D9E75,0.4));
+pivot.add(mkLine(s2,0x534AB7,0.3));
+const rm=new THREE.LineBasicMaterial({color:0x1a2233,opacity:0.35,transparent:true});
+for(let i=0;i<=42;i++){
+  const p1=hpt(i*(NS/42),NS,0),p2=hpt(i*(NS/42),NS,Math.PI);
+  pivot.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([p1,p2]),rm));
+}
+
+// Glow texture cache
+const glowCache={};
+function mkGlow(hex){
+  if(glowCache[hex])return glowCache[hex];
+  const sz=64,c=document.createElement('canvas');
+  c.width=c.height=sz;const ctx=c.getContext('2d'),r=sz/2;
+  const col=new THREE.Color(hex),h='#'+col.getHexString();
+  const g=ctx.createRadialGradient(r,r,0,r,r,r);
+  g.addColorStop(0,h+'cc');g.addColorStop(.45,h+'55');g.addColorStop(1,h+'00');
+  ctx.fillStyle=g;ctx.fillRect(0,0,sz,sz);
+  glowCache[hex]=new THREE.CanvasTexture(c);
+  return glowCache[hex];
+}
+
+// Nodes
+const meshes=[],glows=[],lbls=[];
+const lblCont=document.getElementById('labels');
+EVT.forEach((ev,i)=>{
+  const f=i/(EVT.length-1),t=f*Math.PI*2*HT,y=(f-.5)*HH;
+  const pos=new THREE.Vector3(HR*Math.cos(t),y,HR*Math.sin(t));
+  const col=CATS[ev.cat],r=ev.sz||4;
+  const m=new THREE.Mesh(
+    new THREE.SphereGeometry(r,20,20),
+    new THREE.MeshPhongMaterial({color:col.hex,emissive:col.hex,emissiveIntensity:.3,shininess:90})
+  );
+  m.position.copy(pos);m.userData={ev,i,r};
+  pivot.add(m);meshes.push(m);
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:mkGlow(col.hex),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,opacity:.55}));
+  sp.scale.set(r*5,r*5,1);sp.position.copy(pos);pivot.add(sp);glows.push(sp);
+  const d=document.createElement('div');
+  d.style.cssText='position:absolute;pointer-events:none;transform:translate(-50%,-100%);transition:opacity .18s;text-align:center';
+  d.innerHTML=`<div class="ln" style="font-size:9.5px;font-weight:600;color:rgba(255,255,255,.78);white-space:nowrap;text-shadow:0 0 8px #000,0 0 14px #000">${ev.label}</div><div style="font-size:8px;color:rgba(255,255,255,.35);white-space:nowrap">${ev.date}</div>`;
+  lblCont.appendChild(d);lbls.push(d);
+});
+document.getElementById('node-count').textContent=EVT.length+' EVENTS ON TIMELINE';
+
+// Filters
+const filterDefs=[{k:'all',l:'All'},{k:'bio',l:'Biological'},{k:'cog',l:'Cognitive'},{k:'civ',l:'Civilisational'},{k:'ai',l:'AI & Future'}];
+let activeF='all';
+filterDefs.forEach(f=>{
+  const btn=document.createElement('button');
+  btn.dataset.k=f.k;btn.textContent=f.l;
+  btn.style.cssText='padding:4px 12px;border-radius:16px;font-size:9.5px;font-weight:600;letter-spacing:.5px;cursor:pointer;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.45);color:rgba(255,255,255,.5);transition:all .15s';
+  btn.onclick=()=>setFilter(f.k);
+  document.getElementById('filters').appendChild(btn);
+});
+function setFilter(k){
+  activeF=k;
+  document.querySelectorAll('#filters button').forEach(btn=>{
+    const bk=btn.dataset.k,on=bk===k;
+    const col=bk!=='all'?CATS[bk]:null;
+    if(on&&col){btn.style.background=col.css+'30';btn.style.borderColor=col.css;btn.style.color=col.css;}
+    else if(on){btn.style.background='rgba(255,255,255,.1)';btn.style.borderColor='rgba(255,255,255,.4)';btn.style.color='#fff';}
+    else{btn.style.background='rgba(0,0,0,.45)';btn.style.borderColor='rgba(255,255,255,.18)';btn.style.color='rgba(255,255,255,.5)';}
+  });
+  meshes.forEach((m,i)=>{const v=k==='all'||m.userData.ev.cat===k;m.visible=v;glows[i].visible=v;lbls[i].style.opacity=v?'1':'0';});
+  if(selIdx>=0&&meshes[selIdx]&&!meshes[selIdx].visible)closeInfo();
+}
+
+// Interaction
+const rc=new THREE.Raycaster();const mv=new THREE.Vector2();
+let drag=false,dragged=false,lmx=0,lmy=0,autoRot=true,autoT=null,selIdx=-1,hovIdx=-1;
+app.addEventListener('mousedown',e=>{drag=true;dragged=false;lmx=e.clientX;lmy=e.clientY;autoRot=false;clearTimeout(autoT);app.style.cursor='grabbing';});
+window.addEventListener('mousemove',e=>{
+  if(drag){const dx=e.clientX-lmx,dy=e.clientY-lmy;if(Math.abs(dx)+Math.abs(dy)>3)dragged=true;pivot.rotation.y+=dx*.006;pivot.rotation.x=Math.max(-1.1,Math.min(1.1,pivot.rotation.x+dy*.006));lmx=e.clientX;lmy=e.clientY;}
+  else{const rect=app.getBoundingClientRect();mv.x=((e.clientX-rect.left)/W)*2-1;mv.y=-((e.clientY-rect.top)/H)*2+1;rc.setFromCamera(mv,camera);const vs=meshes.filter(m=>m.visible);const h=rc.intersectObjects(vs);const ph=hovIdx;hovIdx=h.length?h[0].object.userData.i:-1;if(hovIdx!==ph)app.style.cursor=hovIdx>=0?'pointer':'grab';}
+});
+window.addEventListener('mouseup',()=>{drag=false;app.style.cursor=hovIdx>=0?'pointer':'grab';autoT=setTimeout(()=>{autoRot=true;},4000);});
+app.addEventListener('click',e=>{
+  if(dragged)return;
+  const rect=app.getBoundingClientRect();mv.x=((e.clientX-rect.left)/W)*2-1;mv.y=-((e.clientY-rect.top)/H)*2+1;
+  rc.setFromCamera(mv,camera);const h=rc.intersectObjects(meshes.filter(m=>m.visible));
+  if(h.length)selectNode(h[0].object.userData.i);else if(e.target===cv)closeInfo();
+});
+app.addEventListener('touchstart',e=>{const t=e.touches[0];drag=true;dragged=false;lmx=t.clientX;lmy=t.clientY;autoRot=false;},{passive:true});
+app.addEventListener('touchmove',e=>{e.preventDefault();if(!drag)return;const t=e.touches[0];const dx=t.clientX-lmx,dy=t.clientY-lmy;dragged=true;pivot.rotation.y+=dx*.006;pivot.rotation.x=Math.max(-1.1,Math.min(1.1,pivot.rotation.x+dy*.006));lmx=t.clientX;lmy=t.clientY;},{passive:false});
+app.addEventListener('touchend',e=>{
+  if(!dragged&&e.changedTouches.length===1){const t=e.changedTouches[0];const rect=app.getBoundingClientRect();mv.x=((t.clientX-rect.left)/W)*2-1;mv.y=-((t.clientY-rect.top)/H)*2+1;rc.setFromCamera(mv,camera);const h=rc.intersectObjects(meshes.filter(m=>m.visible));if(h.length)selectNode(h[0].object.userData.i);}
+  drag=false;autoT=setTimeout(()=>{autoRot=true;},4000);
+});
+
+function selectNode(idx){
+  selIdx=idx;const ev=EVT[idx];const col=CATS[ev.cat];
+  const bdg=document.getElementById('info-badge');
+  bdg.textContent=col.label.toUpperCase();
+  bdg.style.cssText=`font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:20px;background:${col.css}2a;color:${col.css};border:1px solid ${col.css}55`;
+  document.getElementById('info-date').textContent=ev.date;
+  document.getElementById('info-name').textContent=ev.label;
+  document.getElementById('info-desc').textContent=ev.desc;
+  document.getElementById('info-counter').textContent=(idx+1)+' / '+EVT.length;
+  document.getElementById('info').style.transform='translateY(0)';
+}
+function closeInfo(){selIdx=-1;document.getElementById('info').style.transform='translateY(100%)';}
+function navNode(dir){
+  const vis=meshes.map((m,i)=>m.visible?i:-1).filter(i=>i>=0);
+  if(!vis.length)return;const c=vis.indexOf(selIdx);
+  selectNode(vis[(c+dir+vis.length)%vis.length]);
+}
+
+// Label update
+const tv=new THREE.Vector3();
+function updateLabels(){
+  meshes.forEach((m,i)=>{
+    const d=lbls[i];if(!m.visible){d.style.display='none';return;}d.style.display='block';
+    tv.copy(m.position);pivot.localToWorld(tv);tv.project(camera);
+    const sx=(tv.x*.5+.5)*W,sy=(-tv.y*.5+.5)*H;
+    d.style.left=sx+'px';d.style.top=(sy-m.userData.r*2-5)+'px';
+    const vis=tv.z<1;const isSel=i===selIdx;const isHov=i===hovIdx;
+    d.style.opacity=!vis?'0':isSel?'1':isHov?'.88':'.45';
+    d.firstChild.style.fontSize=isSel||isHov?'10.5px':'9.5px';
+  });
+}
+
+// Node animation
+function updateNodes(){
+  meshes.forEach((m,i)=>{
+    const isSel=i===selIdx,isHov=i===hovIdx;
+    const ts=isSel?1.75:isHov?1.3:1;
+    const cs=m.scale.x;const ns=cs+(ts-cs)*.12;m.scale.setScalar(ns);
+    const tei=isSel?.72:isHov?.55:.3;m.material.emissiveIntensity+=(tei-m.material.emissiveIntensity)*.12;
+    const top=isSel?.92:isHov?.72:.52;glows[i].material.opacity+=(top-glows[i].material.opacity)*.12;
+    const tgs=m.userData.r*5*(isSel?1.9:isHov?1.45:1);const cgs=glows[i].scale.x;const ngs=cgs+(tgs-cgs)*.12;glows[i].scale.set(ngs,ngs,1);
+  });
+}
+
+window.addEventListener('resize',()=>{W=app.clientWidth;H=app.clientHeight;camera.aspect=W/H;camera.updateProjectionMatrix();renderer.setSize(W,H);});
+
+function animate(){requestAnimationFrame(animate);if(autoRot)pivot.rotation.y+=.0022;updateNodes();updateLabels();renderer.render(scene,camera);}
+animate();
+</script>
