@@ -41,7 +41,6 @@
         <div style="font-size:22px;font-weight:700;color:#fff;letter-spacing:.3px">Human Evolution Explorer</div>
         <div style="font-size:10px;color:rgba(255,255,255,.38);letter-spacing:2.5px;text-transform:uppercase;margin-top:3px">85 million years of history</div>
       </div>
-      <button id="share-btn" onclick="shareNode()" style="padding:5px 14px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.04);color:rgba(255,255,255,.4);cursor:pointer;transition:all .18s;flex-shrink:0;display:none">Share</button>
       <button id="about-btn" onclick="toggleAbout()" style="padding:5px 14px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.06);color:rgba(255,255,255,.65);cursor:pointer;transition:all .18s;flex-shrink:0">About</button>
     </div>
     <div id="filters" style="display:flex;gap:8px;align-items:center"></div>
@@ -107,7 +106,6 @@
   </div>
 
   <div id="node-count"></div>
-  <div id="share-toast" style="position:absolute;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(29,158,117,.95);color:#fff;font-size:12px;font-weight:600;padding:10px 20px;border-radius:24px;opacity:0;transition:all .3s ease;pointer-events:none;white-space:nowrap;z-index:50;letter-spacing:.3px">Link copied to clipboard</div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -269,18 +267,12 @@ function selectNode(idx){
   document.getElementById('info-desc').textContent=ev.desc;
   document.getElementById('info-counter').textContent=(idx+1)+' / '+EVT.length;
   document.getElementById('info').style.transform='translateY(0)';
-  const sb=document.getElementById('share-btn');
-  sb.style.display='block';
-  sb.style.borderColor=col.css+'88';
-  sb.style.color=col.css;
   autoRot=false;clearTimeout(autoT);
   const wp=new THREE.Vector3();wp.copy(meshes[idx].position);pivot.localToWorld(wp);
   const dir=wp.clone().sub(camera.position).normalize();
   camTarget.copy(wp).sub(dir.multiplyScalar(95));lookTarget.copy(wp);
 }
 window.closeInfo=function(){
-  const sb=document.getElementById('share-btn');
-  sb.style.display='none';sb.style.borderColor='rgba(255,255,255,.18)';sb.style.color='rgba(255,255,255,.4)';
   selIdx=-1;document.getElementById('info').style.transform='translateY(100%)';
   camTarget.set(0,0,185);lookTarget.set(0,0,0);
   autoT=setTimeout(()=>{autoRot=true;},2500);
@@ -329,16 +321,6 @@ window.hideLoader=function(){
 };
 setTimeout(window.hideLoader,2800);
 
-window.shareNode=function(){
-  if(selIdx<0)return;
-  const url=window.location.origin+window.location.pathname+'?node='+selIdx;
-  navigator.clipboard.writeText(url).then(()=>{
-    const t=document.getElementById('share-toast');
-    t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';
-    setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(-50%) translateY(20px)';},2200);
-  });
-};
-
 window.toggleAbout=function(){
   aboutOpen=!aboutOpen;
   document.getElementById('about').style.transform=aboutOpen?'translateX(0%)':'translateX(100%)';
@@ -379,15 +361,6 @@ function animate(){
 }
 animate();
 
-// Deep link — open node from ?node=X in URL
-const params=new URLSearchParams(window.location.search);
-const nodeParam=params.get('node');
-if(nodeParam!==null){
-  const idx=parseInt(nodeParam);
-  if(!isNaN(idx)&&idx>=0&&idx<EVT.length){
-    setTimeout(()=>selectNode(idx),400);
-  }
-}
 });
 </script>
 </body>
