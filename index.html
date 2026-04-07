@@ -15,9 +15,12 @@
   <canvas id="c" style="display:block"></canvas>
 
   <div   style="position:absolute;top:0;left:0;right:0;height:64px;z-index:10;background:rgba(0,4,14,.9);border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;padding:0 20px;pointer-events:none">
-    <div style="pointer-events:none;flex-shrink:0">
-      <div style="font-size:22px;font-weight:700;color:#fff;letter-spacing:.3px">Human Evolution Explorer</div>
-      <div style="font-size:10px;color:rgba(255,255,255,.4);letter-spacing:2.5px;text-transform:uppercase;margin-top:3px">85 million years of history</div>
+    <div style="display:flex;align-items:center;gap:14px;flex-shrink:0">
+      <div style="pointer-events:none">
+        <div style="font-size:22px;font-weight:700;color:#fff;letter-spacing:.3px">Human Evolution Explorer</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4);letter-spacing:2.5px;text-transform:uppercase;margin-top:3px">85 million years of history</div>
+      </div>
+      <button onclick="toggleAbout()" id="about-btn" style="padding:5px 14px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.8px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.06);color:rgba(255,255,255,.65);cursor:pointer;font-family:system-ui;pointer-events:all;transition:all .18s;text-transform:uppercase;flex-shrink:0">About</button>
     </div>
     <div id="filters" style="display:flex;gap:8px;align-items:center;pointer-events:all"></div>
   </div>
@@ -44,6 +47,47 @@
   </div>
 
   <div id="node-count" style="position:absolute;bottom:20px;left:24px;font-size:9px;color:rgba(255,255,255,.2);letter-spacing:.8px;pointer-events:none"></div>
+
+  <div id="about" style="position:absolute;top:64px;right:0;bottom:0;width:400px;background:rgba(0,3,12,.97);border-left:1px solid rgba(255,255,255,.08);transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);overflow-y:auto;z-index:20">
+    <div style="padding:28px 24px 48px;font-family:system-ui">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
+        <div>
+          <div style="font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:6px">About this project</div>
+          <div style="font-size:20px;font-weight:700;color:#fff;line-height:1.25">Human Evolution<br>Explorer</div>
+        </div>
+        <button onclick="toggleAbout()" style="background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:24px;padding:0;line-height:1;margin-top:2px">×</button>
+      </div>
+      <p style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.78;margin-bottom:24px">An immersive 3D interactive timeline presenting <strong style="color:rgba(255,255,255,.9)">85 million years of human evolutionary history</strong> as a rotating DNA double helix. 19 pivotal events spiral through space — from the first primates to the projected future of AI-directed evolution. Drag to orbit. Click any node to explore the science.</p>
+      <div style="height:1px;background:rgba(255,255,255,.07);margin-bottom:20px"></div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:14px">Three landmark 2025 discoveries</div>
+      <div style="background:rgba(29,158,117,.1);border:1px solid rgba(29,158,117,.28);border-radius:10px;padding:14px 16px;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:700;color:#1D9E75;letter-spacing:.3px;margin-bottom:5px">Two ancestral populations</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.58);line-height:1.68">Cambridge University (<em>Nature Genetics</em>, 2025) found modern humans are a merger of two populations separated for 1.5 million years. Around 20% of our DNA comes from a mysterious "Population B" — concentrated in brain-function genes.</div>
+      </div>
+      <div style="background:rgba(127,119,221,.1);border:1px solid rgba(127,119,221,.28);border-radius:10px;padding:14px 16px;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:700;color:#7F77DD;letter-spacing:.3px;margin-bottom:5px">Lineages far older than thought</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.58);line-height:1.68">A 1-million-year-old skull (Yunxian 2) reconstructed in <em>Science</em> (2025) showed all five major human lineages diverged over a million years ago — double previous estimates. The linear ladder model is dead.</div>
+      </div>
+      <div style="background:rgba(216,90,48,.1);border:1px solid rgba(216,90,48,.28);border-radius:10px;padding:14px 16px;margin-bottom:24px">
+        <div style="font-size:11px;font-weight:700;color:#D85A30;letter-spacing:.3px;margin-bottom:5px">Southern Africa's hidden branch</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.58);line-height:1.68">Uppsala University (<em>Nature</em>, 2025) analysed 28 ancient genomes and found a southern African population in genetic isolation for 200,000 years. Over 40% of their unique variants are linked to brain development.</div>
+      </div>
+      <div style="height:1px;background:rgba(255,255,255,.07);margin-bottom:20px"></div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:10px">The cognitive revolution</div>
+      <p style="font-size:12px;color:rgba(255,255,255,.52);line-height:1.78;margin-bottom:20px">Modern brain architecture existed by ~300,000 years ago — but persistent complex culture only appeared ~40,000–75,000 years ago. Behavioural modernity was not a single mutation. It was an emergent property requiring neural capacity <em>and</em> sufficient population density to sustain cumulative culture across generations.</p>
+      <div style="height:1px;background:rgba(255,255,255,.07);margin-bottom:20px"></div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:10px">The future</div>
+      <p style="font-size:12px;color:rgba(255,255,255,.52);line-height:1.78;margin-bottom:24px">CRISPR gene editing (2012), brain-computer interfaces, and large language models represent a convergence. For the first time in 4 billion years of life on Earth, a species consciously directs its own evolution — shifting from <strong style="color:rgba(255,255,255,.8)">natural selection to conscious selection</strong>. Whether this leads to liberation or catastrophic inequality is the defining question of our century.</p>
+      <div style="height:1px;background:rgba(255,255,255,.07);margin-bottom:20px"></div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:12px">Primary sources</div>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <a href="https://doi.org/10.1038/s41588-025-02117-1" target="_blank" style="font-size:11px;color:#7F77DD;text-decoration:none;line-height:1.5;opacity:.85">Cousins, Scally & Durbin (2025) — Nature Genetics ↗</a>
+        <a href="https://doi.org/10.1038/s41586-025-09811-4" target="_blank" style="font-size:11px;color:#1D9E75;text-decoration:none;line-height:1.5;opacity:.85">Jakobsson et al. (2025) — Nature ↗</a>
+        <a href="https://www.science.org" target="_blank" style="font-size:11px;color:#1D9E75;text-decoration:none;line-height:1.5;opacity:.85">Ni et al. (2025) — Science ↗</a>
+        <a href="https://humanorigins.si.edu" target="_blank" style="font-size:11px;color:rgba(255,255,255,.35);text-decoration:none;line-height:1.5">Smithsonian Human Origins Program ↗</a>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -294,6 +338,16 @@ function updateNodes(){
 }
 
 window.addEventListener('resize',()=>{W=app.clientWidth;H=app.clientHeight;camera.aspect=W/H;camera.updateProjectionMatrix();renderer.setSize(W,H);});
+
+function toggleAbout(){
+  const panel=document.getElementById('about');
+  const btn=document.getElementById('about-btn');
+  const open=panel.style.transform==='translateX(0%)';
+  panel.style.transform=open?'translateX(100%)':'translateX(0%)';
+  btn.style.background=open?'rgba(255,255,255,.06)':'rgba(255,255,255,.14)';
+  btn.style.color=open?'rgba(255,255,255,.65)':'#fff';
+  btn.style.borderColor=open?'rgba(255,255,255,.28)':'rgba(255,255,255,.5)';
+}
 
 function animate(){
   requestAnimationFrame(animate);
