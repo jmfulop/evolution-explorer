@@ -104,8 +104,9 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
+document.addEventListener('DOMContentLoaded',()=>{
 const app=document.getElementById('app'),cv=document.getElementById('c');
-let W=app.clientWidth||window.innerWidth,H=app.clientHeight||window.innerHeight;
+let W=window.innerWidth,H=window.innerHeight;
 
 const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
 renderer.setSize(W,H);
@@ -356,7 +357,7 @@ function animate(){
   renderer.render(scene,camera);
 }
 animate();
+}); // end DOMContentLoaded
 </script>
 </body>
-</html>< ! - -   v 2   - - >  
- 
+</html>
