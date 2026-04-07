@@ -309,7 +309,10 @@ function setFilter(k){
 // Interaction
 const rc=new THREE.Raycaster(),mv=new THREE.Vector2();
 let drag=false,dragged=false,lmx=0,lmy=0,autoRot=true,autoT=null,selIdx=-1,hovIdx=-1;
-app.addEventListener('mousedown',e=>{drag=true;dragged=false;lmx=e.clientX;lmy=e.clientY;autoRot=false;clearTimeout(autoT);app.style.cursor='grabbing';});
+app.addEventListener('mousedown',e=>{
+  if(e.target.closest('#topbar')||e.target.closest('#about'))return;
+  drag=true;dragged=false;lmx=e.clientX;lmy=e.clientY;autoRot=false;clearTimeout(autoT);app.style.cursor='grabbing';
+});
 window.addEventListener('mousemove',e=>{
   if(drag){const dx=e.clientX-lmx,dy=e.clientY-lmy;if(Math.abs(dx)+Math.abs(dy)>3)dragged=true;pivot.rotation.y+=dx*.006;pivot.rotation.x=Math.max(-1.1,Math.min(1.1,pivot.rotation.x+dy*.006));lmx=e.clientX;lmy=e.clientY;}
   else{const rect=app.getBoundingClientRect();mv.x=((e.clientX-rect.left)/W)*2-1;mv.y=-((e.clientY-rect.top)/H)*2+1;rc.setFromCamera(mv,camera);const h=rc.intersectObjects(meshes.filter(m=>m.visible));const ph=hovIdx;hovIdx=h.length?h[0].object.userData.i:-1;if(hovIdx!==ph)app.style.cursor=hovIdx>=0?'pointer':'grab';}
@@ -356,14 +359,15 @@ function navNode(dir){
   selectNode(vis[(c+dir+vis.length)%vis.length]);
 }
 
+let aboutOpen=false;
 function toggleAbout(){
   const panel=document.getElementById('about');
   const btn=document.getElementById('about-btn');
-  const open=panel.style.transform==='translateX(0%)';
-  panel.style.transform=open?'translateX(100%)':'translateX(0%)';
-  btn.style.background=open?'rgba(255,255,255,.06)':'rgba(255,255,255,.14)';
-  btn.style.color=open?'rgba(255,255,255,.65)':'#fff';
-  btn.style.borderColor=open?'rgba(255,255,255,.28)':'rgba(255,255,255,.5)';
+  aboutOpen=!aboutOpen;
+  panel.style.transform=aboutOpen?'translateX(0%)':'translateX(100%)';
+  btn.style.background=aboutOpen?'rgba(255,255,255,.14)':'rgba(255,255,255,.06)';
+  btn.style.color=aboutOpen?'#fff':'rgba(255,255,255,.65)';
+  btn.style.borderColor=aboutOpen?'rgba(255,255,255,.5)':'rgba(255,255,255,.28)';
 }
 
 // Labels
