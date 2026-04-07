@@ -34,8 +34,8 @@
         </div>
         <button onclick="closeInfo()" style="background:none;border:none;color:rgba(255,255,255,.38);cursor:pointer;font-size:22px;line-height:1;padding:0">×</button>
       </div>
-      <div id="info-name" style="font-size:19px;font-weight:700;color:#fff;margin-bottom:6px"></div>
-      <div id="info-desc" style="font-size:13px;color:rgba(255,255,255,.58);line-height:1.72;max-width:580px"></div>
+      <div id="info-name" style="font-size:24px;font-weight:700;color:#fff;margin-bottom:8px;line-height:1.2"></div>
+      <div id="info-desc" style="font-size:15px;color:rgba(255,255,255,.65);line-height:1.75;max-width:580px"></div>
       <div style="display:flex;align-items:center;gap:8px;margin-top:14px">
         <button onclick="navNode(-1)" style="padding:5px 15px;border-radius:20px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.04);color:rgba(255,255,255,.6);cursor:pointer;font-size:11px">← Prev</button>
         <button onclick="navNode(1)" style="padding:5px 15px;border-radius:20px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.04);color:rgba(255,255,255,.6);cursor:pointer;font-size:11px">Next →</button>
@@ -169,7 +169,7 @@ const lblCont=document.getElementById('labels');
 EVT.forEach((ev,i)=>{
   const f=i/(EVT.length-1),t=f*Math.PI*2*HT,y=(f-.5)*HH;
   const pos=new THREE.Vector3(HR*Math.cos(t),y,HR*Math.sin(t));
-  const col=CATS[ev.cat],r=ev.sz||4;
+  const col=CATS[ev.cat],r=(ev.sz||4)*0.38;
   const m=new THREE.Mesh(
     new THREE.SphereGeometry(r,24,24),
     new THREE.MeshPhongMaterial({color:col.hex,emissive:col.hex,emissiveIntensity:.55,shininess:140})
@@ -182,11 +182,11 @@ EVT.forEach((ev,i)=>{
     map:mkGlow(col.hex),transparent:true,
     blending:THREE.AdditiveBlending,depthWrite:false,opacity:.75
   }));
-  sp.scale.set(r*7,r*7,1);sp.position.copy(pos);pivot.add(sp);glows.push(sp);
+  sp.scale.set(r*4,r*4,1);sp.position.copy(pos);pivot.add(sp);glows.push(sp);
 
   const d=document.createElement('div');
   d.style.cssText='position:absolute;pointer-events:none;transform:translate(-50%,-100%);transition:opacity .18s;text-align:center';
-  d.innerHTML=`<div style="font-size:11px;font-weight:600;color:rgba(255,255,255,.92);white-space:nowrap;text-shadow:0 0 3px #000,0 0 6px #000,1px 1px 0 #000,-1px -1px 0 #000;font-family:system-ui">${ev.label}</div><div style="font-size:9px;color:rgba(255,255,255,.5);white-space:nowrap;font-family:system-ui;text-shadow:0 0 3px #000,0 0 6px #000">${ev.date}</div>`;
+  d.innerHTML=`<div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;text-shadow:0 0 3px #000,0 0 8px #000,1px 1px 0 #000,-1px -1px 0 #000;font-family:system-ui;letter-spacing:.2px">${ev.label}</div><div style="font-size:11px;color:rgba(255,255,255,.55);white-space:nowrap;font-family:system-ui;text-shadow:0 0 3px #000,0 0 6px #000;margin-top:2px">${ev.date}</div>`;
   lblCont.appendChild(d);lbls.push(d);
 });
 document.getElementById('node-count').textContent=EVT.length+' EVENTS ON TIMELINE';
@@ -247,7 +247,7 @@ function selectNode(idx){
   autoRot=false;clearTimeout(autoT);
   const wp=new THREE.Vector3();wp.copy(meshes[idx].position);pivot.localToWorld(wp);
   const dir=wp.clone().sub(camera.position).normalize();
-  camTarget.copy(wp).sub(dir.multiplyScalar(65));
+  camTarget.copy(wp).sub(dir.multiplyScalar(95));
   lookTarget.copy(wp);
 }
 function closeInfo(){
