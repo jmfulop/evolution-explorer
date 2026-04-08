@@ -108,6 +108,11 @@
   </div>
 
   <div id="node-count"></div>
+  <div id="hint" style="position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:6;display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:8px 20px;pointer-events:none;transition:opacity 1s ease">
+    <span style="font-size:11px;color:rgba(255,255,255,.6);letter-spacing:.5px;white-space:nowrap">Drag to rotate</span>
+    <span style="width:1px;height:12px;background:rgba(255,255,255,.2)"></span>
+    <span style="font-size:11px;color:rgba(255,255,255,.6);letter-spacing:.5px;white-space:nowrap">Click a node to explore</span>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -221,8 +226,8 @@ filterDefs.forEach(f=>{
   const btn=document.createElement('button');btn.dataset.k=f.k;btn.textContent=f.l;
   const col=f.k!=='all'?CATS[f.k]:null;
   btn.style.cssText=col
-    ?'padding:6px 18px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:1.5px solid '+col.css+'99;background:'+col.css+'1a;color:'+col.css+';transition:all .18s;white-space:nowrap'
-    :'padding:6px 18px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:1.5px solid rgba(255,255,255,.4);background:rgba(255,255,255,.07);color:rgba(255,255,255,.85);transition:all .18s;white-space:nowrap';
+    ?'padding:6px 18px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:1.5px solid '+col.css+'cc;background:'+col.css+'28;color:'+col.css+';transition:all .18s;white-space:nowrap'
+    :'padding:6px 18px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px;cursor:pointer;border:1.5px solid rgba(255,255,255,.55);background:rgba(255,255,255,.1);color:#fff;transition:all .18s;white-space:nowrap';
   btn.onclick=()=>setFilter(f.k);
   document.getElementById('filters').appendChild(btn);
 });
@@ -232,8 +237,8 @@ function setFilter(k){
     const bk=btn.dataset.k,on=bk===k,col=bk!=='all'?CATS[bk]:null;
     if(on&&col){btn.style.background=col.css;btn.style.borderColor=col.css;btn.style.color='#fff';btn.style.boxShadow='0 0 16px '+col.css+'88';}
     else if(on){btn.style.background='rgba(255,255,255,.18)';btn.style.borderColor='rgba(255,255,255,.6)';btn.style.color='#fff';btn.style.boxShadow='none';}
-    else if(col){btn.style.background=col.css+'1a';btn.style.borderColor=col.css+'99';btn.style.color=col.css;btn.style.boxShadow='none';}
-    else{btn.style.background='rgba(255,255,255,.07)';btn.style.borderColor='rgba(255,255,255,.4)';btn.style.color='rgba(255,255,255,.85)';btn.style.boxShadow='none';}
+    else if(col){btn.style.background=col.css+'28';btn.style.borderColor=col.css+'cc';btn.style.color=col.css;btn.style.boxShadow='none';}
+    else{btn.style.background='rgba(255,255,255,.1)';btn.style.borderColor='rgba(255,255,255,.55)';btn.style.color='#fff';btn.style.boxShadow='none';}
   });
   meshes.forEach((m,i)=>{const v=k==='all'||m.userData.ev.cat===k;m.visible=v;glows[i].visible=v;lbls[i].style.opacity=v?'1':'0';});
   if(selIdx>=0&&meshes[selIdx]&&!meshes[selIdx].visible)closeInfo();
@@ -323,19 +328,19 @@ window.hideLoader=function(){
 };
 setTimeout(window.hideLoader,2800);
 
-// Auto-open on first visit
-if(true||!localStorage.getItem('evo-visited')){
-  setTimeout(()=>{
-    aboutOpen=true;
-    document.getElementById('about').style.transform='translateX(0%)';
-    const btn=document.getElementById('about-btn');
-    btn.style.background='rgba(255,255,255,.14)';
-    btn.style.color='#fff';
-    btn.style.borderColor='rgba(255,255,255,.5)';
-    btn.style.animation='none';
-  },3200);
-  localStorage.setItem('evo-visited','1');
-}
+// Pulse the about button to draw attention - don't auto-open
+// Button already has pulse-about animation from CSS
+
+// Fade hint after 5s
+setTimeout(()=>{
+  const h=document.getElementById('hint');
+  if(h){h.style.opacity='0';setTimeout(()=>{if(h)h.style.display='none';},1000);}
+},5000);
+// Hide hint on first interaction
+app.addEventListener('mousedown',()=>{
+  const h=document.getElementById('hint');
+  if(h){h.style.opacity='0';setTimeout(()=>{if(h)h.style.display='none';},500);}
+},{once:true});
 
 window.toggleAbout=function(){
   aboutOpen=!aboutOpen;
